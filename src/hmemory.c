@@ -148,13 +148,12 @@ char * HMEMORY_FUNCTION_NAME(strdup_actual) (const char *name, const char *strin
 	void *rc;
 	if (string == NULL) {
 #if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
-		hmemory_lock();
 		hdebug_lock();
 		hinfof("strdup with invalid argument '%p'", string);
 		hinfof("    at: %s %s:%d", func, file, line);
+		debug_dump_callstack("       ");
 		hdebug_unlock();
 		hassert((string != NULL) && "invalid strdup parameter");
-		hmemory_unlock();
 #endif
 		return NULL;
 	}
@@ -171,13 +170,12 @@ char * HMEMORY_FUNCTION_NAME(strndup_actual) (const char *name, const char *stri
 	void *rc;
 	if (string == NULL) {
 #if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
-		hmemory_lock();
 		hdebug_lock();
 		hinfof("strdup with invalid argument '%p'", string);
 		hinfof("    at: %s %s:%d", func, file, line);
+		debug_dump_callstack("       ");
 		hdebug_unlock();
-		hassert((string != NULL) && "invalid strdup parameter");
-		hmemory_unlock();
+		hassert((string != NULL) && "invalid strndup parameter");
 #endif
 		return NULL;
 	}
