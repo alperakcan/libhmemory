@@ -402,17 +402,9 @@ static int debug_memory_add (const char *name, void *address, size_t size, const
 		hinfof("%s with invalid memory (%p)", command, address);
 		hinfof("    at: %s (%s:%d)", func, file, line);
 		hinfof("  ");
-		hinfof("  it is essential for correct operation of hmemory that there");
-		hinfof("  are no memory errors such as dangling pointers in process.");
-		hinfof("  ");
-		hinfof("  which means that it is a good idea to make sure that program");
-		hinfof("  is clean before analyzing with hmemory. it is possible however");
-		hinfof("  that some memory errors are caused by data races.")
-		hinfof("  ");
 		hinfof("  if it is certain that program is memory bug free, then hmemory");
-		hinfof("  may have a serious bug that needs to be fixed urgent. please close");
-		hinfof("  race condition checking for now '-DHMEMORY_ENABLE_RACE_CHECK=0',");
-		hinfof("  and inform author");
+		hinfof("  may have a serious bug that needs to be fixed urgent. please ");
+		hinfof("  inform author");
 		hinfof("    at: alper.akcan@gmail.com");
 		hdebug_unlock();
 		hassert((m == NULL) && "invalid memory");
@@ -449,17 +441,9 @@ static int debug_memory_del (void *address, const char *command, const char *fun
 	hinfof("%s with invalid memory (%p)", command, address);
 	hinfof("    at: %s (%s:%d)", func, file, line);
 	hinfof("  ");
-	hinfof("  it is essential for correct operation of hmemory that there");
-	hinfof("  are no memory errors such as dangling pointers in process.");
-	hinfof("  ");
-	hinfof("  which means that it is a good idea to make sure that program");
-	hinfof("  is clean before analyzing with hmemory. it is possible however");
-	hinfof("  that some memory errors are caused by data races.")
-	hinfof("  ");
 	hinfof("  if it is certain that program is memory bug free, then hmemory");
-	hinfof("  may have a serious bug that needs to be fixed urgent. please close");
-	hinfof("  race condition checking for now '-DHMEMORY_ENABLE_RACE_CHECK=0',");
-	hinfof("  and inform author");
+	hinfof("  may have a serious bug that needs to be fixed urgent. please ");
+	hinfof("  inform author");
 	hinfof("    at: alper.akcan@gmail.com");
 	hdebug_unlock();
 	hassert((m != NULL) && "invalid memory");
