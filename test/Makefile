@@ -25,7 +25,6 @@ define test-defaults
 
 	$1_includes-y = \
 		../src
-endif
 endef
 
 define test-debug-defaults
@@ -44,7 +43,6 @@ define test-debug-defaults
 		-rdynamic \
 		-ldl \
 		-lbfd
-endif
 endef
 
 $(eval $(foreach T,$(target-y), $(eval $(call test-defaults,$T))))
