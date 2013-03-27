@@ -10,10 +10,6 @@ include Makefile.lib
 
 tests: test
 	${Q}( \
-	  export hthread_lock_threshold=1000; \
-	  export hthread_lock_threshold_assert=0; \
-	  export hthread_lock_try_threshold=1000; \
-	  export hthread_lock_try_threshold_assert=0; \
 	  let sc=0; \
 	  let ss=0; \
 	  let sf=0; \
@@ -27,10 +23,6 @@ tests: test
 	    fi; \
 	    let sc=$$sc+1; \
 	  done; \
-	  export hthread_lock_threshold=1000; \
-	  export hthread_lock_threshold_assert=1; \
-	  export hthread_lock_try_threshold=1000; \
-	  export hthread_lock_try_threshold_assert=1; \
 	  let fc=0; \
 	  let fs=0; \
 	  let ff=0; \
