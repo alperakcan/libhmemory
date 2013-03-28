@@ -17,11 +17,10 @@ int main (int argc, char *argv[])
 	void *rc;
 	(void) argc;
 	(void) argv;
-	rc = calloc(1, 1024);
+	rc = strndup(argv[0], 1024);
 	if (rc == NULL) {
-		fprintf(stderr, "calloc failed\n");
+		fprintf(stderr, "strndup failed\n");
 		exit(-1);
 	}
-	free(rc);
 	return 0;
 }

@@ -17,11 +17,15 @@ int main (int argc, char *argv[])
 	void *rc;
 	(void) argc;
 	(void) argv;
-	rc = calloc(1, 1024);
+	rc = realloc(NULL, 1024);
 	if (rc == NULL) {
-		fprintf(stderr, "calloc failed\n");
+		fprintf(stderr, "realloc failed\n");
 		exit(-1);
 	}
-	free(rc);
+	rc = realloc(rc, 2048);
+	if (rc == NULL) {
+		fprintf(stderr, "realloc failed\n");
+		exit(-1);
+	}
 	return 0;
 }

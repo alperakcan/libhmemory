@@ -33,6 +33,7 @@ define test-debug-defaults
 		../src/libhmemory.o
 
 	$1_cflags-y = \
+		-O1 \
 		-DHMEMORY_DEBUG=1 \
 		-include ../src/hmemory.h
 	

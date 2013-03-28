@@ -17,12 +17,10 @@ int main (int argc, char *argv[])
 	void *rc;
 	(void) argc;
 	(void) argv;
-	rc = malloc(1024);
+	rc = realloc(NULL, 1024);
 	if (rc == NULL) {
-		fprintf(stderr, "malloc failed\n");
+		fprintf(stderr, "realloc failed\n");
 		exit(-1);
 	}
-	memset(rc + 10, 0, 1024);
-	free(rc + 10);
 	return 0;
 }

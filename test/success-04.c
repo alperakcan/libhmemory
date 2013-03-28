@@ -17,9 +17,9 @@ int main (int argc, char *argv[])
 	void *rc;
 	(void) argc;
 	(void) argv;
-	rc = calloc(1, 1024);
+	rc = strdup(argv[0]);
 	if (rc == NULL) {
-		fprintf(stderr, "calloc failed\n");
+		fprintf(stderr, "strdup failed\n");
 		exit(-1);
 	}
 	free(rc);

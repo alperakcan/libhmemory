@@ -14,12 +14,13 @@
 
 int main (int argc, char *argv[])
 {
-	void *rc;
+	int r;
+	char *rc;
 	(void) argc;
 	(void) argv;
-	rc = calloc(1, 1024);
-	if (rc == NULL) {
-		fprintf(stderr, "calloc failed\n");
+	r = asprintf(&rc, "%s", argv[0]);
+	if (r < 0) {
+		fprintf(stderr, "asprintf failed\n");
 		exit(-1);
 	}
 	free(rc);

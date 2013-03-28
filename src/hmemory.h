@@ -50,20 +50,6 @@
 
 #define HMEMORY_DEBUG_NAME_MAX			256
 
-#undef memset
-#define memset(b, c, len) ({ \
-	void *__r; \
-	__r = hmemory_memset(b, c, len); \
-	__r; \
-})
-
-#undef memcpy
-#define memcpy(s1, s2, n) ({ \
-	void *__r; \
-	__r = hmemory_memcpy(s1, s2, n); \
-	__r; \
-})
-
 #undef asprintf
 #define asprintf(strp, fmt...) ({ \
 	int __r; \
@@ -141,9 +127,6 @@
 #define HMEMORY_FUNCTION_NAME(function) hmemory_ ## function
 
 #endif
-
-#define hmemory_memset(a, b, c)               HMEMORY_FUNCTION_NAME(memset_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
-#define hmemory_memcpy(a, b, c)               HMEMORY_FUNCTION_NAME(memcpy_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
 
 #define hmemory_asprintf(a, b...)             HMEMORY_FUNCTION_NAME(asprintf_actual)(__FUNCTION__, __FILE__, __LINE__, a, b)
 #define hmemory_vasprintf(a, b, c)            HMEMORY_FUNCTION_NAME(vasprintf_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
