@@ -48,6 +48,8 @@
 #include <stdarg.h>
 #include <errno.h>
 
+#define HMEMORY_DEBUG_NAME_MAX			256
+
 #undef memset
 #define memset(b, c, len) ({ \
 	void *__r; \
@@ -65,8 +67,8 @@
 #undef asprintf
 #define asprintf(strp, fmt...) ({ \
 	int __r; \
-	char __n[256]; \
-	snprintf(__n, 256, "asprintf(%s %s:%d)", __FUNCTION__, __FILE__, __LINE__); \
+	char __n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "asprintf(%s %s:%d)", __FUNCTION__, __FILE__, __LINE__); \
 	__r = hmemory_asprintf(__n, strp, fmt); \
 	__r; \
 })
@@ -74,8 +76,8 @@
 #undef vasprintf
 #define vasprintf(strp, fmt, ap) ({ \
 	int __r; \
-	char __n[256]; \
-	snprintf(__n, 256, "vasprintf(%s %s:%d)", __FUNCTION__, __FILE__, __LINE__); \
+	char __n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "vasprintf(%s %s:%d)", __FUNCTION__, __FILE__, __LINE__); \
 	__r = hmemory_vasprintf(__n, strp, fmt); \
 	__r; \
 })
@@ -83,8 +85,8 @@
 #undef strdup
 #define strdup(string) ({ \
 	void *__r; \
-	char __n[256]; \
-	snprintf(__n, 256, "strdup-%p(%s %s:%d)", string, __FUNCTION__, __FILE__, __LINE__); \
+	char __n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "strdup-%p(%s %s:%d)", string, __FUNCTION__, __FILE__, __LINE__); \
 	__r = hmemory_strdup(__n, string); \
 	__r; \
 })
@@ -92,8 +94,8 @@
 #undef strndup
 #define strndup(string, size) ({ \
 	void *__r; \
-	char __n[256]; \
-	snprintf(__n, 256, "strndup-%p-%d(%s %s:%d)", string, size, __FUNCTION__, __FILE__, __LINE__); \
+	char __n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "strndup-%p-%d(%s %s:%d)", string, size, __FUNCTION__, __FILE__, __LINE__); \
 	__r = hmemory_strndup(__n, string, size); \
 	__r; \
 })
@@ -101,8 +103,8 @@
 #undef malloc
 #define malloc(size) ({ \
 	void *__r; \
-	char __n[256]; \
-	snprintf(__n, 256, "malloc-%d(%s %s:%d)", size, __FUNCTION__, __FILE__, __LINE__); \
+	char __n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "malloc-%d(%s %s:%d)", size, __FUNCTION__, __FILE__, __LINE__); \
 	__r = hmemory_malloc(__n, size); \
 	__r; \
 })
@@ -110,8 +112,8 @@
 #undef calloc
 #define calloc(nmemb, size) ({ \
 	void *__r; \
-	char __n[256]; \
-	snprintf(__n, 256, "calloc-%d,%d(%s %s:%d)", nmemb, size, __FUNCTION__, __FILE__, __LINE__); \
+	char __n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "calloc-%d,%d(%s %s:%d)", nmemb, size, __FUNCTION__, __FILE__, __LINE__); \
 	__r = hmemory_calloc(__n, nmemb, size); \
 	__r; \
 })
@@ -119,8 +121,8 @@
 #undef realloc
 #define realloc(address, size) ({ \
 	void *__r; \
-	char __n[256]; \
-	snprintf(__n, 256, "realloc-%p,%d(%s %s:%d)", address, size, __FUNCTION__, __FILE__, __LINE__); \
+	char __n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "realloc-%p,%d(%s %s:%d)", address, size, __FUNCTION__, __FILE__, __LINE__); \
 	__r = hmemory_realloc(__n, address, size); \
 	__r; \
 })
