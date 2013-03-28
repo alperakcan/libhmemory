@@ -65,6 +65,6 @@ int main (int argc, char *argv[])
 		fprintf(stderr, "asprintf failed\n");
 		exit(-1);
 	}
-	free(strp);
+	free(strp + 10);
 	return 0;
 }
