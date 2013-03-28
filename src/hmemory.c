@@ -94,6 +94,7 @@ static pthread_mutex_t debugf_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static pthread_mutex_t hmemory_mutex	= PTHREAD_MUTEX_INITIALIZER;
 
+static inline int hmemory_getenv_int (const char *name);
 static inline int debug_dump_callstack (const char *prefix);
 static inline int debug_memory_add (const char *name, void *address, size_t size, const char *command, const char *func, const char *file, const int line);
 static inline int debug_memory_del (void *address, const char *command, const char *func, const char *file, const int line);
@@ -108,21 +109,6 @@ static inline int debug_memory_del (void *address, const char *command, const ch
 #define debug_memory_del(a...)		debug_memory_unused()
 
 #endif
-
-static inline int hmemory_getenv_int (const char *name)
-{
-	int r;
-	const char *e;
-	if (name == NULL) {
-		return -1;
-	}
-	e = getenv(name);
-	if (e == NULL) {
-		return -1;
-	}
-	r = atoi(e);
-	return r;
-}
 
 void * HMEMORY_FUNCTION_NAME(memset_actual) (const char *func, const char *file, const int line, void *destination, int c, size_t len)
 {
@@ -270,6 +256,21 @@ void HMEMORY_FUNCTION_NAME(free_actual) (const char *func, const char *file, con
 }
 
 #if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
+
+static inline int hmemory_getenv_int (const char *name)
+{
+	int r;
+	const char *e;
+	if (name == NULL) {
+		return -1;
+	}
+	e = getenv(name);
+	if (e == NULL) {
+		return -1;
+	}
+	r = atoi(e);
+	return r;
+}
 
 static inline unsigned long long debug_getclock (void)
 {
