@@ -38,9 +38,14 @@
 
 #if !defined(HMEMORY_INTERNAL) || (HMEMORY_INTERNAL == 0)
 
+#if !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <errno.h>
 
 #undef memset
@@ -57,12 +62,30 @@
 	__r; \
 })
 
+#undef asprintf
+#define asprintf(strp, fmt...) ({ \
+	int __r; \
+	char __n[256]; \
+	snprintf(__n, 256, "asprintf(%s %s:%d)", __FUNCTION__, __FILE__, __LINE__); \
+	__r = hmemory_asprintf(__n, strp, fmt); \
+	__r; \
+})
+
+#undef vasprintf
+#define vasprintf(strp, fmt, ap) ({ \
+	int __r; \
+	char __n[256]; \
+	snprintf(__n, 256, "vasprintf(%s %s:%d)", __FUNCTION__, __FILE__, __LINE__); \
+	__r = hmemory_vasprintf(__n, strp, fmt); \
+	__r; \
+})
+
 #undef strdup
 #define strdup(string) ({ \
 	void *__r; \
 	char __n[256]; \
 	snprintf(__n, 256, "strdup-%p(%s %s:%d)", string, __FUNCTION__, __FILE__, __LINE__); \
-	__r = hmemory_strdup((const char *) __n, string); \
+	__r = hmemory_strdup(__n, string); \
 	__r; \
 })
 
@@ -71,7 +94,7 @@
 	void *__r; \
 	char __n[256]; \
 	snprintf(__n, 256, "strndup-%p-%d(%s %s:%d)", string, size, __FUNCTION__, __FILE__, __LINE__); \
-	__r = hmemory_strndup((const char *) __n, string, size); \
+	__r = hmemory_strndup(__n, string, size); \
 	__r; \
 })
 
@@ -80,7 +103,7 @@
 	void *__r; \
 	char __n[256]; \
 	snprintf(__n, 256, "malloc-%d(%s %s:%d)", size, __FUNCTION__, __FILE__, __LINE__); \
-	__r = hmemory_malloc((const char *) __n, size); \
+	__r = hmemory_malloc(__n, size); \
 	__r; \
 })
 
@@ -89,7 +112,7 @@
 	void *__r; \
 	char __n[256]; \
 	snprintf(__n, 256, "calloc-%d,%d(%s %s:%d)", nmemb, size, __FUNCTION__, __FILE__, __LINE__); \
-	__r = hmemory_calloc((const char *) __n, nmemb, size); \
+	__r = hmemory_calloc(__n, nmemb, size); \
 	__r; \
 })
 
@@ -98,7 +121,7 @@
 	void *__r; \
 	char __n[256]; \
 	snprintf(__n, 256, "realloc-%p,%d(%s %s:%d)", address, size, __FUNCTION__, __FILE__, __LINE__); \
-	__r = hmemory_realloc((const char *) __n, address, size); \
+	__r = hmemory_realloc(__n, address, size); \
 	__r; \
 })
 
@@ -117,24 +140,32 @@
 
 #endif
 
-#define hmemory_memset(a, b, c)               HMEMORY_FUNCTION_NAME(memset_actual)(a, b, c, __FUNCTION__, __FILE__, __LINE__)
-#define hmemory_memcpy(a, b, c)               HMEMORY_FUNCTION_NAME(memcpy_actual)(a, b, c, __FUNCTION__, __FILE__, __LINE__)
+#define hmemory_memset(a, b, c)               HMEMORY_FUNCTION_NAME(memset_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
+#define hmemory_memcpy(a, b, c)               HMEMORY_FUNCTION_NAME(memcpy_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
 
-#define hmemory_strdup(a, b)                  HMEMORY_FUNCTION_NAME(strdup_actual)(a, b, __FUNCTION__, __FILE__, __LINE__)
-#define hmemory_strndup(a, b, c)              HMEMORY_FUNCTION_NAME(strndup_actual)(a, b, c, __FUNCTION__, __FILE__, __LINE__)
-#define hmemory_malloc(a, b)                  HMEMORY_FUNCTION_NAME(malloc_actual)(a, b, __FUNCTION__, __FILE__, __LINE__)
-#define hmemory_calloc(a, b, c)               HMEMORY_FUNCTION_NAME(calloc_actual)(a, b, c, __FUNCTION__, __FILE__, __LINE__)
-#define hmemory_realloc(a, b, c)              HMEMORY_FUNCTION_NAME(realloc_actual)(a, b, c, __FUNCTION__, __FILE__, __LINE__)
-#define hmemory_free(a)                       HMEMORY_FUNCTION_NAME(free_actual)(a, __FUNCTION__, __FILE__, __LINE__)
+#define hmemory_asprintf(a, b...)             HMEMORY_FUNCTION_NAME(asprintf_actual)(__FUNCTION__, __FILE__, __LINE__, a, b)
+#define hmemory_vasprintf(a, b, c)            HMEMORY_FUNCTION_NAME(vasprintf_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
 
-void * HMEMORY_FUNCTION_NAME(memset_actual) (void *destination, int c, size_t len, const char *func, const char *file, const int line);
-void * HMEMORY_FUNCTION_NAME(memcpy_actual) (void *destination, void *source, size_t len, const char *func, const char *file, const int line);
+#define hmemory_strdup(a, b)                  HMEMORY_FUNCTION_NAME(strdup_actual)(__FUNCTION__, __FILE__, __LINE__, a, b)
+#define hmemory_strndup(a, b, c)              HMEMORY_FUNCTION_NAME(strndup_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
 
-char * HMEMORY_FUNCTION_NAME(strdup_actual) (const char *name, const char *string, const char *func, const char *file, const int line);
-char * HMEMORY_FUNCTION_NAME(strndup_actual) (const char *name, const char *string, size_t size, const char *func, const char *file, const int line);
-void * HMEMORY_FUNCTION_NAME(malloc_actual) (const char *name, size_t size, const char *func, const char *file, const int line);
-void * HMEMORY_FUNCTION_NAME(calloc_actual) (const char *name, size_t nmemb, size_t size, const char *func, const char *file, const int line);
-void * HMEMORY_FUNCTION_NAME(realloc_actual) (const char *name, void *address, size_t size, const char *func, const char *file, const int line);
-void HMEMORY_FUNCTION_NAME(free_actual) (void *address, const char *func, const char *file, const int line);
+#define hmemory_malloc(a, b)                  HMEMORY_FUNCTION_NAME(malloc_actual)(__FUNCTION__, __FILE__, __LINE__, a, b)
+#define hmemory_calloc(a, b, c)               HMEMORY_FUNCTION_NAME(calloc_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
+#define hmemory_realloc(a, b, c)              HMEMORY_FUNCTION_NAME(realloc_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
+#define hmemory_free(a)                       HMEMORY_FUNCTION_NAME(free_actual)(__FUNCTION__, __FILE__, __LINE__, a)
+
+void * HMEMORY_FUNCTION_NAME(memset_actual) (const char *func, const char *file, const int line, void *destination, int c, size_t len);
+void * HMEMORY_FUNCTION_NAME(memcpy_actual) (const char *func, const char *file, const int line, void *destination, void *source, size_t len);
+
+int HMEMORY_FUNCTION_NAME(asprintf_actual) (const char *func, const char *file, const int line, const char *name, char **strp, const char *fmt, ...);
+int HMEMORY_FUNCTION_NAME(vasprintf_actual) (const char *func, const char *file, const int line, const char *name, char **strp, const char *fmt, va_list ap);
+
+char * HMEMORY_FUNCTION_NAME(strdup_actual) (const char *func, const char *file, const int line, const char *name, const char *string);
+char * HMEMORY_FUNCTION_NAME(strndup_actual) (const char *func, const char *file, const int line, const char *name, const char *string, size_t size);
+
+void * HMEMORY_FUNCTION_NAME(malloc_actual) (const char *func, const char *file, const int line, const char *name, size_t size);
+void * HMEMORY_FUNCTION_NAME(calloc_actual) (const char *func, const char *file, const int line, const char *name, size_t nmemb, size_t size);
+void * HMEMORY_FUNCTION_NAME(realloc_actual) (const char *func, const char *file, const int line, const char *name, void *address, size_t size);
+void HMEMORY_FUNCTION_NAME(free_actual) (const char *func, const char *file, const int line, void *address);
 
 #endif

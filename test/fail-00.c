@@ -14,7 +14,9 @@
 
 int main (int argc, char *argv[])
 {
+	int r;
 	void *rc;
+	char *strp;
 	(void) argc;
 	(void) argv;
 	rc = malloc(1024);
@@ -58,5 +60,11 @@ int main (int argc, char *argv[])
 		exit(-1);
 	}
 	free(rc + 10);
+	r = asprintf(&strp, "%s", argv[0]);
+	if (r < 0) {
+		fprintf(stderr, "asprintf failed\n");
+		exit(-1);
+	}
+	free(strp);
 	return 0;
 }

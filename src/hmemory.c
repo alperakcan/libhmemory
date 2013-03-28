@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <sys/time.h>
 #include <errno.h>
 #include <unistd.h>
@@ -123,7 +124,7 @@ static inline int hmemory_getenv_int (const char *name)
 	return r;
 }
 
-void * HMEMORY_FUNCTION_NAME(memset_actual) (void *destination, int c, size_t len, const char *func, const char *file, const int line)
+void * HMEMORY_FUNCTION_NAME(memset_actual) (const char *func, const char *file, const int line, void *destination, int c, size_t len)
 {
 	void *rc;
 	(void) func;
@@ -133,7 +134,7 @@ void * HMEMORY_FUNCTION_NAME(memset_actual) (void *destination, int c, size_t le
 	return rc;
 }
 
-void * HMEMORY_FUNCTION_NAME(memcpy_actual) (void *destination, void *source, size_t len, const char *func, const char *file, const int line)
+void * HMEMORY_FUNCTION_NAME(memcpy_actual) (const char *func, const char *file, const int line, void *destination, void *source, size_t len)
 {
 	void *rc;
 	(void) func;
@@ -143,7 +144,48 @@ void * HMEMORY_FUNCTION_NAME(memcpy_actual) (void *destination, void *source, si
 	return rc;
 }
 
-char * HMEMORY_FUNCTION_NAME(strdup_actual) (const char *name, const char *string, const char *func, const char *file, const int line)
+int HMEMORY_FUNCTION_NAME(asprintf_actual) (const char *func, const char *file, const int line, const char *name, char **strp, const char *fmt, ...)
+{
+	int rc;
+	va_list ap;
+	va_start(ap, fmt);
+	rc = vasprintf(strp, fmt, ap);
+	if (rc < 0) {
+#if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
+		hdebug_lock();
+		hinfof("asprintf failed");
+		hinfof("    at: %s %s:%d", func, file, line);
+		debug_dump_callstack("       ");
+		hdebug_unlock();
+		hassert((rc >= 0) && "asprintf failed");
+#endif
+	} else {
+		debug_memory_add(name, *strp, strlen(*strp) + 1, "asprintf", func, file, line);
+	}
+	va_end(ap);
+	return rc;
+}
+
+int HMEMORY_FUNCTION_NAME(vasprintf_actual) (const char *func, const char *file, const int line, const char *name, char **strp, const char *fmt, va_list ap)
+{
+	int rc;
+	rc = vasprintf(strp, fmt, ap);
+	if (rc < 0) {
+#if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
+		hdebug_lock();
+		hinfof("vasprintf failed");
+		hinfof("    at: %s %s:%d", func, file, line);
+		debug_dump_callstack("       ");
+		hdebug_unlock();
+		hassert((rc >= 0) && "vasprintf failed");
+#endif
+	} else {
+		debug_memory_add(name, *strp, strlen(*strp) + 1, "vasprintf", func, file, line);
+	}
+	return rc;
+}
+
+char * HMEMORY_FUNCTION_NAME(strdup_actual) (const char *func, const char *file, const int line, const char *name, const char *string)
 {
 	void *rc;
 	if (string == NULL) {
@@ -165,7 +207,7 @@ char * HMEMORY_FUNCTION_NAME(strdup_actual) (const char *name, const char *strin
 	return rc;
 }
 
-char * HMEMORY_FUNCTION_NAME(strndup_actual) (const char *name, const char *string, size_t size, const char *func, const char *file, const int line)
+char * HMEMORY_FUNCTION_NAME(strndup_actual) (const char *func, const char *file, const int line, const char *name, const char *string, size_t size)
 {
 	void *rc;
 	if (string == NULL) {
@@ -187,7 +229,7 @@ char * HMEMORY_FUNCTION_NAME(strndup_actual) (const char *name, const char *stri
 	return rc;
 }
 
-void * HMEMORY_FUNCTION_NAME(malloc_actual) (const char *name, size_t size, const char *func, const char *file, const int line)
+void * HMEMORY_FUNCTION_NAME(malloc_actual) (const char *func, const char *file, const int line, const char *name, size_t size)
 {
 	void *rc;
 	rc = malloc(size);
@@ -198,7 +240,7 @@ void * HMEMORY_FUNCTION_NAME(malloc_actual) (const char *name, size_t size, cons
 	return rc;
 }
 
-void * HMEMORY_FUNCTION_NAME(calloc_actual) (const char *name, size_t nmemb, size_t size, const char *func, const char *file, const int line)
+void * HMEMORY_FUNCTION_NAME(calloc_actual) (const char *func, const char *file, const int line, const char *name, size_t nmemb, size_t size)
 {
 	void *rc;
 	rc = calloc(nmemb, size);
@@ -209,7 +251,7 @@ void * HMEMORY_FUNCTION_NAME(calloc_actual) (const char *name, size_t nmemb, siz
 	return rc;
 }
 
-void * HMEMORY_FUNCTION_NAME(realloc_actual) (const char *name, void *address, size_t size, const char *func, const char *file, const int line)
+void * HMEMORY_FUNCTION_NAME(realloc_actual) (const char *func, const char *file, const int line, const char *name, void *address, size_t size)
 {
 	void *rc;
 	rc = realloc(address, size);
@@ -221,7 +263,7 @@ void * HMEMORY_FUNCTION_NAME(realloc_actual) (const char *name, void *address, s
 	return rc;
 }
 
-void HMEMORY_FUNCTION_NAME(free_actual) (void *address, const char *func, const char *file, const int line)
+void HMEMORY_FUNCTION_NAME(free_actual) (const char *func, const char *file, const int line, void *address)
 {
 	debug_memory_del(address, "free", func, file, line);
 	free(address);
@@ -454,6 +496,14 @@ found_m:
 	free(m);
 	hmemory_unlock();
 	return 0;
+}
+
+static void __attribute__ ((constructor)) hmemory_init (void)
+{
+}
+
+static void __attribute__ ((destructor)) hmemory_fini (void)
+{
 }
 
 #endif
