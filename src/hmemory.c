@@ -417,6 +417,10 @@ static inline int debug_dump_callstack (const char *prefix)
 	return 0;
 }
 
+#if !defined(MAX)
+#define MAX(a, b)				(((a) > (b)) ? (a) : (b))
+#endif
+
 struct hmemory_memory {
 	void *address;
 	UT_hash_handle hh;
@@ -427,7 +431,10 @@ struct hmemory_memory {
 	char name[0];
 };
 
-static struct hmemory_memory *debug_memory = NULL;
+static struct hmemory_memory *debug_memory	= NULL;
+static unsigned long long memory_peak		= 0;
+static unsigned long long memory_current	= 0;
+static unsigned long long memory_total		= 0;
 
 static int debug_memory_add (const char *name, void *address, size_t size, const char *command, const char *func, const char *file, const int line)
 {
@@ -463,6 +470,9 @@ static int debug_memory_add (const char *name, void *address, size_t size, const
 	m->line = line;
 	HASH_ADD_PTR(debug_memory, address, m);
 	hdebugf("%s added memory: %s, address: %p, size: %zd, func: %s, file: %s, line: %d", command, m->name, m->address, m->size, m->func, m->file, m->line);
+	memory_total += size;
+	memory_current += size;
+	memory_peak = MAX(memory_peak, memory_current);
 	hmemory_unlock();
 	return 0;
 }
@@ -494,6 +504,7 @@ static int debug_memory_del (void *address, const char *command, const char *fun
 found_m:
 	HASH_DEL(debug_memory, m);
 	hdebugf("%s deleted memory: %s, address: %p, size: %zd, func: %s, file: %s, line: %d", command, m->name, m->address, m->size, m->func, m->file, m->line);
+	memory_current -= m->size;
 	free(m);
 	hmemory_unlock();
 	return 0;
@@ -505,6 +516,25 @@ static void __attribute__ ((constructor)) hmemory_init (void)
 
 static void __attribute__ ((destructor)) hmemory_fini (void)
 {
+	struct hmemory_memory *m;
+	struct hmemory_memory *nm;
+	hmemory_lock();
+	hdebug_lock();
+	hinfof("memory trace:")
+	hinfof("  current: %llu bytes (%.02f mb)", memory_current, ((double) memory_current) / (1024.00 * 1024.00));
+	hinfof("  peak   : %llu bytes (%.02f mb)", memory_peak, ((double) memory_peak) / (1024.00 * 1024.00));
+	hinfof("  total  : %llu bytes (%.02f mb)", memory_total, ((double) memory_total) / (1024.00 * 1024.00));
+	if (HASH_COUNT(debug_memory) > 0) {
+		HASH_ITER(hh, debug_memory, m, nm) {
+			hinfof("  - %zd bytes at: %s (%s:%u)", m->size, m->func, m->file, m->line);
+			HASH_DEL(debug_memory, m);
+			free(m->address);
+			free(m);
+		}
+		hassert(0 && "memory leaks found");
+	}
+	hdebug_unlock();
+	hmemory_unlock();
 }
 
 #endif
