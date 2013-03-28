@@ -534,7 +534,7 @@ static int debug_memory_check (void *address, const char *command, const char *f
 		goto found_m;
 	}
 	hdebug_lock();
-	hinfof("%s with invalid memory (%p)", command, address);
+	hinfof("%s with invalid address (%p)", command, address);
 	hinfof("    at: %s (%s:%d)", func, file, line);
 	debug_dump_callstack("       ");
 	hinfof("  ");
@@ -543,20 +543,20 @@ static int debug_memory_check (void *address, const char *command, const char *f
 	hinfof("  inform author");
 	hinfof("    at: alper.akcan@gmail.com");
 	hdebug_unlock();
-	hassert((m != NULL) && "invalid memory");
+	hassert((m != NULL) && "invalid address");
 	hmemory_unlock();
 	return -1;
 found_m:
 	hdebug_lock();
 	rcu = memcmp(m->address, &hmemory_signature, sizeof(hmemory_signature));
 	if (rcu != 0) {
-		hinfof("%s with corrupted memory (%p), underflow", command, address);
+		hinfof("%s with corrupted address (%p), underflow", command, address);
 		hinfof("    at: %s (%s:%d)", func, file, line);
 		debug_dump_callstack("       ");
 	}
 	rco = memcmp(m->address + m->size - sizeof(hmemory_signature), &hmemory_signature, sizeof(hmemory_signature));
 	if (rco != 0) {
-		hinfof("%s with corrupted memory (%p), overflow", command, address);
+		hinfof("%s with corrupted address (%p), overflow", command, address);
 		hinfof("    at: %s (%s:%d)", func, file, line);
 		debug_dump_callstack("       ");
 	}
@@ -578,7 +578,7 @@ static int debug_memory_del (void *address, const char *command, const char *fun
 		goto found_m;
 	}
 	hdebug_lock();
-	hinfof("%s with invalid memory (%p)", command, address);
+	hinfof("%s with invalid address (%p)", command, address);
 	hinfof("    at: %s (%s:%d)", func, file, line);
 	debug_dump_callstack("       ");
 	hinfof("  ");
@@ -587,7 +587,7 @@ static int debug_memory_del (void *address, const char *command, const char *fun
 	hinfof("  inform author");
 	hinfof("    at: alper.akcan@gmail.com");
 	hdebug_unlock();
-	hassert((m != NULL) && "invalid memory");
+	hassert((m != NULL) && "invalid address");
 	hmemory_unlock();
 	return -1;
 found_m:
@@ -609,18 +609,20 @@ static void __attribute__ ((destructor)) hmemory_fini (void)
 	struct hmemory_memory *nm;
 	hmemory_lock();
 	hdebug_lock();
-	hinfof("memory trace:")
-	hinfof("  current: %llu bytes (%.02f mb)", memory_current, ((double) memory_current) / (1024.00 * 1024.00));
-	hinfof("  peak   : %llu bytes (%.02f mb)", memory_peak, ((double) memory_peak) / (1024.00 * 1024.00));
-	hinfof("  total  : %llu bytes (%.02f mb)", memory_total, ((double) memory_total) / (1024.00 * 1024.00));
+	hinfof("memory information:")
+	hinfof("    current: %llu bytes (%.02f mb)", memory_current, ((double) memory_current) / (1024.00 * 1024.00));
+	hinfof("    peak   : %llu bytes (%.02f mb)", memory_peak, ((double) memory_peak) / (1024.00 * 1024.00));
+	hinfof("    total  : %llu bytes (%.02f mb)", memory_total, ((double) memory_total) / (1024.00 * 1024.00));
+	hinfof("    leaks  : %d items", HASH_COUNT(debug_memory));
 	if (HASH_COUNT(debug_memory) > 0) {
+		hinfof("  memory leaks:");
 		HASH_ITER(hh, debug_memory, m, nm) {
-			hinfof("  - %zd bytes at: %s (%s:%u)", m->size, m->func, m->file, m->line);
+			hinfof("    - %zd bytes at: %s (%s:%u)", m->size, m->func, m->file, m->line);
 			HASH_DEL(debug_memory, m);
 			free(m->address);
 			free(m);
 		}
-		hassert(0 && "memory leaks found");
+		hassert(0 && "memory leak");
 	}
 	hdebug_unlock();
 	hmemory_unlock();

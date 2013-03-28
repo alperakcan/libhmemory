@@ -1,0 +1,64 @@
+
+unit tests behaviours and expected results
+==========================================
+
+  00-19: leak tests
+  20-39: invalid address
+  40-59: memory corruption
+
+                  success                                  fail
+    ------------------------------------   ------------------------------------
+    
+00  malloc                                 malloc
+    free                                   exit
+    exit                                   ** memory leak **
+
+01  calloc                                 calloc
+    free                                   exit
+    exit                                   ** memory leak **
+
+02  realloc: null                          realloc: null
+    free                                   exit
+    exit                                   ** memory leak **
+
+03  realloc: null                          realloc: null
+    realloc: ret                           realloc: ret
+    free: ret                              exit
+    exit                                   ** memory leak **
+
+04  strdup                                 strdup
+    free                                   exit
+    exit                                   ** memory leak **
+
+05  strndup                                strndup
+    free                                   exit
+    exit                                   ** memory leak **
+
+06  asprintf                               asprintf
+    free                                   exit
+    exit                                   ** memory leak **
+
+20  malloc                                 free
+    free                                   ** invalid address **
+    exit
+
+21  realloc: null                          realloc: null
+    realloc: ret                           realloc: ret + 10
+    free: ret                              ** invalid address **
+    exit
+
+40  rc = malloc: 1024                      rc = malloc: 1024
+    memset: rc, 0, 1024                    memset: rc, 0, 1025
+    free: rc                               free: rc
+    exit                                   ** memory corruption **
+
+41  rc = malloc: 1024                      rc = malloc: 1024
+    memset: rc, 0, 1024                    memset: rc - 10, 0, 1024
+    free: rc                               free: rc
+    exit                                   ** memory corruption **
+
+42  rc = malloc: 1024                      rc = malloc: 1024
+    memset: rc, 0, 1024                    memset: rc - 10, 0, 1044
+    free: rc                               free: rc
+    exit                                   ** memory corruption **
+  
