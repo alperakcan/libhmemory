@@ -438,6 +438,7 @@ static int debug_memory_del (void *address, const char *command, const char *fun
 	hdebug_lock();
 	hinfof("%s with invalid memory (%p)", command, address);
 	hinfof("    at: %s (%s:%d)", func, file, line);
+	debug_dump_callstack("       ");
 	hinfof("  ");
 	hinfof("  if it is certain that program is memory bug free, then hmemory");
 	hinfof("  may have a serious bug that needs to be fixed urgent. please ");
