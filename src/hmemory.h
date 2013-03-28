@@ -34,6 +34,11 @@
 #endif
 #define HMEMORY_ASSERT_ON_ERROR_NAME		"hmemory_assert_on_error"
 
+#if !defined(HMEMORY_CORRUPTION_CHECK_INTERVAL)
+#define HMEMORY_CORRUPTION_CHECK_INTERVAL	500
+#endif
+#define HMEMORY_CORRUPTION_CHECK_INTERVAL_NAME	"hmemory_corruption_check_interval"
+
 #if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
 
 #if !defined(HMEMORY_INTERNAL) || (HMEMORY_INTERNAL == 0)

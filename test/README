@@ -61,4 +61,22 @@ unit tests behaviours and expected results
     memset: rc, 0, 1024                    memset: rc - 10, 0, 1044
     free: rc                               free: rc
     exit                                   ** memory corruption **
+
+43  rc = malloc: 1024                      rc = malloc: 1024
+    memset: rc, 0, 1024                    memset: rc, 0, 1025
+    sleep: 3                               sleep: 3
+    free: rc                               ** memory corruption **
+    exit                                   
+
+44  rc = malloc: 1024                      rc = malloc: 1024
+    memset: rc, 0, 1024                    memset: rc - 10, 0, 1024
+    sleep: 3                               sleep: 3
+    free: rc                               ** memory corruption **
+    exit                                   
+
+45  rc = malloc: 1024                      rc = malloc: 1024
+    memset: rc, 0, 1024                    memset: rc - 10, 0, 1044
+    sleep: 3                               sleep: 3
+    free: rc                               ** memory corruption **
+    exit                                   
   

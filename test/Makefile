@@ -40,6 +40,9 @@ define test-debug-defaults
 	$1_includes-y = \
 		../src
 	
+	$1_ldflags-y += \
+		-lpthread
+
 	$1_ldflags-${HMEMORY_ENABLE_CALLSTACK} += \
 		-rdynamic \
 		-ldl \

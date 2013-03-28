@@ -520,7 +520,7 @@ static int debug_memory_add (const char *name, void *address, size_t size, const
 	return 0;
 }
 
-static int debug_memory_check (void *address, const char *command, const char *func, const char *file, const int line)
+static int debug_memory_check_actual (void *address, const char *command, const char *func, const char *file, const int line)
 {
 	int rcu;
 	int rco;
@@ -528,7 +528,6 @@ static int debug_memory_check (void *address, const char *command, const char *f
 	if (address == NULL) {
 		return 0;
 	}
-	hmemory_lock();
 	HASH_FIND_PTR(debug_memory, &address, m);
 	if (m != NULL) {
 		goto found_m;
@@ -544,7 +543,6 @@ static int debug_memory_check (void *address, const char *command, const char *f
 	hinfof("    at: alper.akcan@gmail.com");
 	hdebug_unlock();
 	hassert((m != NULL) && "invalid address");
-	hmemory_unlock();
 	return -1;
 found_m:
 	hdebug_lock();
@@ -562,6 +560,13 @@ found_m:
 	}
 	hdebug_unlock();
 	hassert(((rcu == 0) && (rco == 0)) && "memory corruption");
+	return 0;
+}
+
+static int debug_memory_check (void *address, const char *command, const char *func, const char *file, const int line)
+{
+	hmemory_lock();
+	debug_memory_check_actual(address, command, func, file, line);
 	hmemory_unlock();
 	return 0;
 }
@@ -599,14 +604,60 @@ found_m:
 	return 0;
 }
 
+static int hmemory_worker_started = 0;
+static int hmemory_worker_running = 0;
+static pthread_t hmemory_thread;
+
+static void * hmemory_worker (void *arg)
+{
+	unsigned int v;
+	struct hmemory_memory *m;
+	struct hmemory_memory *nm;
+	(void) arg;
+	while (1) {
+		v = hmemory_getenv_int(HMEMORY_CORRUPTION_CHECK_INTERVAL_NAME);
+		if (v == (unsigned int) -1) {
+			v = HMEMORY_CORRUPTION_CHECK_INTERVAL;
+		}
+		usleep(v * 1000);
+		hmemory_lock();
+		if (hmemory_worker_running == 0) {
+			hmemory_unlock();
+			break;
+		}
+		HASH_ITER(hh, debug_memory, m, nm) {
+			debug_memory_check_actual(m->address, "worker check", __FUNCTION__, __FILE__, __LINE__);
+		}
+		hmemory_unlock();
+	}
+	return NULL;
+}
+
 static void __attribute__ ((constructor)) hmemory_init (void)
 {
+	int rc;
+	hmemory_lock();
+	hmemory_worker_started = 1;
+	hmemory_worker_running = 1;
+	rc = pthread_create(&hmemory_thread, NULL, hmemory_worker, NULL);
+	if (rc != 0) {
+		herrorf("failed to create worker");
+		hmemory_worker_started = 0;
+		hmemory_worker_running = 0;
+	}
+	hmemory_unlock();
 }
 
 static void __attribute__ ((destructor)) hmemory_fini (void)
 {
 	struct hmemory_memory *m;
 	struct hmemory_memory *nm;
+	hmemory_lock();
+	if (hmemory_worker_running == 1) {
+		hmemory_worker_running = 0;
+	}
+	hmemory_unlock();
+	pthread_join(hmemory_thread, NULL);
 	hmemory_lock();
 	hdebug_lock();
 	hinfof("memory information:")
