@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009-2013 Alper Akcan <alper.akcan@gmail.com>
+ *  Copyright (c) 2008-2013 Alper Akcan <alper.akcan@gmail.com>
  *
  * This program is free software. It comes without any warranty, to
  * the extent permitted by applicable law. You can redistribute it
