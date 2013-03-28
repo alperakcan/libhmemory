@@ -100,12 +100,12 @@ static inline int debug_memory_del (void *address, const char *command, const ch
 
 #else
 
-#define debug_thread_unused() \
+#define debug_memory_unused() \
 	(void) func; \
 	(void) file; \
 	(void) line;
-#define debug_memory_add(a...)		(void) name; debug_thread_unused()
-#define debug_memory_del(a...)		debug_thread_unused()
+#define debug_memory_add(a...)		(void) name; debug_memory_unused()
+#define debug_memory_del(a...)		debug_memory_unused()
 
 #endif
 
