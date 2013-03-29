@@ -62,6 +62,12 @@ hthread configuration parameters can be set using <tt>make flags</tt>, please ch
   
   terminate the process on any pthreads api misuse and/or lock order violation.
 
+- HMEMORY_CORRUPTION_CHECK_INTERVAL
+
+  default 5000
+  
+  memory corruption checking interval in miliseconds
+
 ### 2.2. run-time options ###
   
 hthread reads configuration parameters from environment via getenv function call. one can either set/change environment
@@ -82,6 +88,12 @@ please check example section for demonstration.
   
   terminate the process on any pthreads api misuse and/or lock order violation.
 
+- hmemory_corruption_check_interval
+
+  default 5000
+  
+  memory corruption checking interval in miliseconds
+  
 ## 3. error reports ##
 
 ## 4. test cases ##
