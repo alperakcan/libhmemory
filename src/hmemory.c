@@ -544,6 +544,10 @@ struct hmemory_memory {
 	char name[0];
 };
 
+static pthread_t hmemory_thread;
+static int hmemory_worker_started		= 0;
+static int hmemory_worker_running		= 0;
+
 static struct hmemory_memory *debug_memory	= NULL;
 static unsigned long long memory_peak		= 0;
 static unsigned long long memory_current	= 0;
@@ -690,10 +694,6 @@ found_m:
 	hmemory_unlock();
 	return 0;
 }
-
-static int hmemory_worker_started = 0;
-static int hmemory_worker_running = 0;
-static pthread_t hmemory_thread;
 
 static void * hmemory_worker (void *arg)
 {
