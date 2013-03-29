@@ -46,22 +46,22 @@ can detect errors of:
 
 ### 2.1. compile-time options ###
 
-hthread configuration parameters can be set using <tt>make flags</tt>, please check example section for demonstration.
+hmemory configuration parameters can be set using <tt>make flags</tt>, please check example section for demonstration.
 
-- HTHREAD_ENABLE_CALLSTACK
+- HMEMORY_ENABLE_CALLSTACK
   
   default 1
   
   enable/disable reporting call trace information on error, useful but depends on <tt>libbdf</tt>, <tt>libdl</tt>, and
   <tt>backtrace function from glibc</tt>. may be disabled for toolchains which does not support backtracing.
   
-- HTHREAD_REPORT_CALLSTACK
+- HMEMORY_REPORT_CALLSTACK
 
   default 1
   
   dump callstack info (function call history) for error point.
   
-- HTHREAD_ASSERT_ON_ERROR
+- HMEMORY_ASSERT_ON_ERROR
 
   default 1
   
@@ -75,19 +75,19 @@ hthread configuration parameters can be set using <tt>make flags</tt>, please ch
 
 ### 2.2. run-time options ###
   
-hthread reads configuration parameters from environment via getenv function call. one can either set/change environment
+hmemory reads configuration parameters from environment via getenv function call. one can either set/change environment
 variables in source code of monitored project via setenv function call, or set them globally in running shell using
 export function.
 
 please check example section for demonstration.
 
-- hthread_report_callstack
+- hmemory_report_callstack
   
   default 1
   
   dump callstack info (function call history) for error point.
 
-- hthread_assert_on_error
+- hmemory_assert_on_error
     
   default 1
   
@@ -109,9 +109,9 @@ please check example section for demonstration.
   2. <a href="#52-memory-leak">memory leak</a>
   3. <a href="#53-memory-corruption">memory corruption</a>
 
-using hthread is pretty simple, just clone libhthread and build;
+using hmemory is pretty simple, just clone libhmemory and build;
 
-- add <tt>-include hmemory.h -DMEMORY_DEBUG=1 -g -O1</tt> to target cflags
+- add <tt>-include hmemory.h -DHMEMORY_DEBUG=1 -g -O1</tt> to target cflags
 - link with <tt>-lhmemory -lpthread -lrt</tt> if HMEMORY_ENABLE_CALLSTACK is 0 or
 - link with <tt>-lhmemory -lpthread -lrt -ldl -lbfd</tt> if HMEMORY_ENABLE_CALLSTACK is 1
 
