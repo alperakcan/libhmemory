@@ -92,6 +92,7 @@ static pthread_mutex_t debugf_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define hmemory_unlock()		pthread_mutex_unlock(&hmemory_mutex)
 #define hmemory_self_pthread()		pthread_self()
 
+static pthread_cond_t hmemory_cond	= PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t hmemory_mutex	= PTHREAD_MUTEX_INITIALIZER;
 
 static unsigned int hmemory_signature	= 0xdeadbeef;
@@ -697,6 +698,8 @@ static pthread_t hmemory_thread;
 static void * hmemory_worker (void *arg)
 {
 	unsigned int v;
+	struct timeval tval;
+	struct timespec tspec;
 	struct hmemory_memory *m;
 	struct hmemory_memory *nm;
 	(void) arg;
@@ -705,8 +708,17 @@ static void * hmemory_worker (void *arg)
 		if (v == (unsigned int) -1) {
 			v = HMEMORY_CORRUPTION_CHECK_INTERVAL;
 		}
-		usleep(v * 1000);
+		gettimeofday(&tval, NULL);
+		tspec.tv_sec = tval.tv_sec + (v / 1000);
+		tspec.tv_nsec = (tval.tv_usec + ((v % 1000) * 1000)) * 1000;
+		if (tspec.tv_nsec >= 1000000000) {
+			tspec.tv_sec += 1;
+			tspec.tv_nsec -= 1000000000;
+		}
 		hmemory_lock();
+		if (hmemory_worker_running == 1) {
+			pthread_cond_timedwait(&hmemory_cond, &hmemory_mutex, &tspec);
+		}
 		if (hmemory_worker_running == 0) {
 			hmemory_unlock();
 			break;
@@ -742,6 +754,7 @@ static void __attribute__ ((destructor)) hmemory_fini (void)
 	if (hmemory_worker_running == 1) {
 		hmemory_worker_running = 0;
 	}
+	pthread_cond_signal(&hmemory_cond);
 	hmemory_unlock();
 	pthread_join(hmemory_thread, NULL);
 	hmemory_lock();

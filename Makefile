@@ -13,6 +13,7 @@ tests: test
 	  let sc=0; \
 	  let ss=0; \
 	  let sf=0; \
+	  export hmemory_corruption_check_interval=250; \
 	  for t in `ls -1 test/success-*-debug`; do \
 	    echo "testing $$t ..."; \
 	    $$t; \
@@ -26,6 +27,7 @@ tests: test
 	  let fc=0; \
 	  let fs=0; \
 	  let ff=0; \
+	  export hmemory_corruption_check_interval=250; \
 	  for t in `ls -1 test/fail-*-debug`; do \
 	    echo "testing $$t ..."; \
 	    $$t; \

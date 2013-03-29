@@ -35,7 +35,7 @@
 #define HMEMORY_ASSERT_ON_ERROR_NAME		"hmemory_assert_on_error"
 
 #if !defined(HMEMORY_CORRUPTION_CHECK_INTERVAL)
-#define HMEMORY_CORRUPTION_CHECK_INTERVAL	500
+#define HMEMORY_CORRUPTION_CHECK_INTERVAL	5000
 #endif
 #define HMEMORY_CORRUPTION_CHECK_INTERVAL_NAME	"hmemory_corruption_check_interval"
 
