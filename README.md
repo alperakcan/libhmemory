@@ -213,8 +213,7 @@ free call after memset catchs the error. hmemory has check points in every inter
 checker which works with defined interval, below is the example of how to tune:
 
     # gcc -include src/hmemory.h -DHMEMORY_DEBUG=1 -g -O1 -o app-debug main.c -lhmemory -lpthread
-    # ./app-debug
-    hmemory_corruption_check_interval=250 ./app-debug
+    # hmemory_corruption_check_interval=250 ./app-debug
     (hmemory:19530) worker check with corrupted address (0x7f80fb800000), overflow
     (hmemory:19530)     at: hmemory_worker (hmemory.c:727)
     Assertion failed: (((rcu == 0) && (rco == 0)) && "memory corruption"), function debug_memory_check_actual, file hmemory.c, line 634.
