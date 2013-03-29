@@ -4,6 +4,8 @@ hmemory is a memory error detector for c/c++ programs.
 
 1. <a href="#1-overview">overview</a>
 2. <a href="#2-configuration">configuration</a>
+  - <a href="#21-compile-time-options">compile-time options</a>
+  - <a href="#22-run-time-options">run-time options</a>
 3. <a href="#3-error-reports">error reports</a>
 4. <a href="#4-test-cases">test cases</a>
 5. <a href="#5-usage-example">usage example</a>
