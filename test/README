@@ -5,6 +5,7 @@ unit tests behaviours and expected results
   00-19: leak tests
   20-39: invalid address
   40-59: memory corruption
+  60-79: memory overlap
 
                   success                                  fail
     ------------------------------------   ------------------------------------
@@ -79,4 +80,8 @@ unit tests behaviours and expected results
     sleep: 3                               sleep: 3
     free: rc                               ** memory corruption **
     exit                                   
-  
+
+60  rc = malloc: 1024                      rc = malloc: 1024
+    memmove: rc, rc + 10, 100              memcpy: rc, rc + 10, 100
+    free: rc                               ** memory overlap **
+    exit                                   

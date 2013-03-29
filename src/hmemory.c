@@ -94,13 +94,19 @@ static pthread_mutex_t debugf_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static pthread_mutex_t hmemory_mutex	= PTHREAD_MUTEX_INITIALIZER;
 
+static unsigned int hmemory_signature	= 0xdeadbeef;
+static unsigned int hmemory_signature_size = sizeof(hmemory_signature);
+
 static inline int hmemory_getenv_int (const char *name);
 static inline int debug_dump_callstack (const char *prefix);
 static inline int debug_memory_add (const char *name, void *address, size_t size, const char *command, const char *func, const char *file, const int line);
 static inline int debug_memory_check (void *address, const char *command, const char *func, const char *file, const int line);
+static inline int debug_memory_overlap (void *s1, void *s2, size_t len, const char *command, const char *func, const char *file, const int line);
 static inline int debug_memory_del (void *address, const char *command, const char *func, const char *file, const int line);
 
 #else
+
+static unsigned int hmemory_signature_size = 0;
 
 #define debug_memory_unused() \
 	(void) func; \
@@ -109,15 +115,14 @@ static inline int debug_memory_del (void *address, const char *command, const ch
 #define debug_memory_add(a...)		(void) name; (void) command; debug_memory_unused()
 #define debug_memory_del(a...)		debug_memory_unused()
 #define debug_memory_check(a...)	debug_memory_unused()
+#define debug_memory_overlap(a...)      debug_memory_unused()
 
 #endif
-
-static unsigned int hmemory_signature	= 0xdeadbeef;
 
 static inline void * malloc_actual (const char *command, const char *func, const char *file, const int line, const char *name, size_t size)
 {
 	void *rc;
-	size += sizeof(hmemory_signature) * 2;
+	size += hmemory_signature_size * 2;
 	rc = malloc(size);
 	if (rc == NULL) {
 		herrorf("malloc failed");
@@ -125,23 +130,28 @@ static inline void * malloc_actual (const char *command, const char *func, const
 	}
 	debug_memory_add(name, rc, size, command, func, file, line);
 	debug_memory_check(rc, command, func, file, line);
-	return rc + sizeof(hmemory_signature);
+	return rc + hmemory_signature_size;
 }
 
 static inline void free_actual (const char *command, const char *func, const char *file, const int line, void *address)
 {
 	void *addr;
 	(void) command;
-	addr = address - sizeof(hmemory_signature);
+	addr = address - hmemory_signature_size;
 	debug_memory_check(addr, command, func, file, line);
 	debug_memory_del(addr, command, func, file, line);
 	free(addr);
 }
 
+void * HMEMORY_FUNCTION_NAME(memcpy_actual) (const char *func, const char *file, const int line, void *s1, void *s2, size_t len)
+{
+	debug_memory_overlap(s1, s2, len, "memcpy", func, file, line);
+	return memcpy(s1, s2, len);
+}
+
 int HMEMORY_FUNCTION_NAME(asprintf_actual) (const char *func, const char *file, const int line, const char *name, char **strp, const char *fmt, ...)
 {
 	int rc;
-	void *tmp;
 	va_list ap;
 	va_start(ap, fmt);
 	rc = vasprintf(strp, fmt, ap);
@@ -155,10 +165,18 @@ int HMEMORY_FUNCTION_NAME(asprintf_actual) (const char *func, const char *file, 
 		hassert((rc >= 0) && "asprintf failed");
 #endif
 	} else {
+#if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
+		void *tmp;
 		tmp = malloc_actual("asprintf", func, file, line, name, strlen(*strp) + 1);
 		memcpy(tmp, *strp, strlen(*strp) + 1);
 		free(*strp);
 		*strp = tmp;
+#else
+		(void) name;
+		(void) func;
+		(void) file;
+		(void) line;
+#endif
 	}
 	va_end(ap);
 	return rc;
@@ -167,7 +185,6 @@ int HMEMORY_FUNCTION_NAME(asprintf_actual) (const char *func, const char *file, 
 int HMEMORY_FUNCTION_NAME(vasprintf_actual) (const char *func, const char *file, const int line, const char *name, char **strp, const char *fmt, va_list ap)
 {
 	int rc;
-	void *tmp;
 	rc = vasprintf(strp, fmt, ap);
 	if (rc < 0) {
 #if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
@@ -179,10 +196,18 @@ int HMEMORY_FUNCTION_NAME(vasprintf_actual) (const char *func, const char *file,
 		hassert((rc >= 0) && "vasprintf failed");
 #endif
 	} else {
+#if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
+		void *tmp;
 		tmp = malloc_actual("vasprintf", func, file, line, name, strlen(*strp) + 1);
 		memcpy(tmp, *strp, strlen(*strp) + 1);
 		free(*strp);
 		*strp = tmp;
+#else
+		(void) name;
+		(void) func;
+		(void) file;
+		(void) line;
+#endif
 	}
 	return rc;
 }
@@ -190,7 +215,6 @@ int HMEMORY_FUNCTION_NAME(vasprintf_actual) (const char *func, const char *file,
 char * HMEMORY_FUNCTION_NAME(strdup_actual) (const char *func, const char *file, const int line, const char *name, const char *string)
 {
 	void *rc;
-	void *tmp;
 	if (string == NULL) {
 #if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
 		hdebug_lock();
@@ -206,16 +230,27 @@ char * HMEMORY_FUNCTION_NAME(strdup_actual) (const char *func, const char *file,
 	if (rc == NULL) {
 		herrorf("strdup failed");
 	}
-	tmp = malloc_actual("strdup", func, file, line, name, strlen(rc) + 1);
-	memcpy(tmp, rc, strlen(rc) + 1);
-	free(rc);
-	return tmp;
+#if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
+	{
+		void *tmp;
+		tmp = malloc_actual("strdup", func, file, line, name, strlen(rc) + 1);
+		memcpy(tmp, rc, strlen(rc) + 1);
+		free(rc);
+		rc = tmp;
+	}
+#else
+	(void) name;
+	(void) func;
+	(void) file;
+	(void) line;
+#endif
+	return rc;
+
 }
 
 char * HMEMORY_FUNCTION_NAME(strndup_actual) (const char *func, const char *file, const int line, const char *name, const char *string, size_t size)
 {
 	void *rc;
-	void *tmp;
 	if (string == NULL) {
 #if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
 		hdebug_lock();
@@ -231,10 +266,21 @@ char * HMEMORY_FUNCTION_NAME(strndup_actual) (const char *func, const char *file
 	if (rc == NULL) {
 		herrorf("strndup failed");
 	}
-	tmp = malloc_actual("strndup", func, file, line, name, strlen(rc) + 1);
-	memcpy(tmp, rc, strlen(rc) + 1);
-	free(rc);
-	return tmp;
+#if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
+	{
+		void *tmp;
+		tmp = malloc_actual("strndup", func, file, line, name, strlen(rc) + 1);
+		memcpy(tmp, rc, strlen(rc) + 1);
+		free(rc);
+		rc = tmp;
+	}
+#else
+	(void) name;
+	(void) func;
+	(void) file;
+	(void) line;
+#endif
+	return rc;
 }
 
 void * HMEMORY_FUNCTION_NAME(malloc_actual) (const char *func, const char *file, const int line, const char *name, size_t size)
@@ -251,6 +297,7 @@ void * HMEMORY_FUNCTION_NAME(malloc_actual) (const char *func, const char *file,
 void * HMEMORY_FUNCTION_NAME(calloc_actual) (const char *func, const char *file, const int line, const char *name, size_t nmemb, size_t size)
 {
 	void *rc;
+#if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
 	rc = malloc_actual("calloc", func, file, line, name, nmemb * size);
 	if (rc == NULL) {
 		herrorf("malloc actual failed");
@@ -261,12 +308,24 @@ void * HMEMORY_FUNCTION_NAME(calloc_actual) (const char *func, const char *file,
 		herrorf("memset actual failed");
 		return NULL;
 	}
+#else
+	(void) name;
+	(void) func;
+	(void) file;
+	(void) line;
+	rc = calloc(nmemb, size);
+	if (rc == NULL) {
+		herrorf("calloc failed");
+		return NULL;
+	}
+#endif
 	return rc;
 }
 
 void * HMEMORY_FUNCTION_NAME(realloc_actual) (const char *func, const char *file, const int line, const char *name, void *address, size_t size)
 {
 	void *rc;
+#if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
 	void *tmp;
 	void *addr;
 	if (address == NULL) {
@@ -277,7 +336,7 @@ void * HMEMORY_FUNCTION_NAME(realloc_actual) (const char *func, const char *file
 		}
 		return rc;
 	}
-	addr = address - sizeof(hmemory_signature);
+	addr = address - hmemory_signature_size;
 	debug_memory_check(addr, "realloc", func, file, line);
 	rc = realloc(addr, size);
 	if (rc == NULL) {
@@ -288,7 +347,19 @@ void * HMEMORY_FUNCTION_NAME(realloc_actual) (const char *func, const char *file
 	tmp = malloc_actual("realloc", func, file, line, name, size);
 	memcpy(tmp, rc, size);
 	free(rc);
-	return tmp;
+	rc = tmp;
+#else
+	(void) name;
+	(void) func;
+	(void) file;
+	(void) line;
+	rc = realloc(address, size);
+	if (rc == NULL) {
+		herrorf("realloc failed");
+		return NULL;
+	}
+#endif
+	return rc;
 }
 
 void HMEMORY_FUNCTION_NAME(free_actual) (const char *func, const char *file, const int line, void *address)
@@ -509,8 +580,8 @@ static int debug_memory_add (const char *name, void *address, size_t size, const
 	m->func = func;
 	m->file = file;
 	m->line = line;
-	memcpy(m->address, &hmemory_signature, sizeof(hmemory_signature));
-	memcpy(m->address + m->size - sizeof(hmemory_signature), &hmemory_signature, sizeof(hmemory_signature));
+	memcpy(m->address, &hmemory_signature, hmemory_signature_size);
+	memcpy(m->address + m->size - hmemory_signature_size, &hmemory_signature, hmemory_signature_size);
 	HASH_ADD_PTR(debug_memory, address, m);
 	hdebugf("%s added memory: %s, address: %p, size: %zd, func: %s, file: %s, line: %d", command, m->name, m->address, m->size, m->func, m->file, m->line);
 	memory_total += size;
@@ -546,13 +617,13 @@ static int debug_memory_check_actual (void *address, const char *command, const 
 	return -1;
 found_m:
 	hdebug_lock();
-	rcu = memcmp(m->address, &hmemory_signature, sizeof(hmemory_signature));
+	rcu = memcmp(m->address, &hmemory_signature, hmemory_signature_size);
 	if (rcu != 0) {
 		hinfof("%s with corrupted address (%p), underflow", command, address);
 		hinfof("    at: %s (%s:%d)", func, file, line);
 		debug_dump_callstack("       ");
 	}
-	rco = memcmp(m->address + m->size - sizeof(hmemory_signature), &hmemory_signature, sizeof(hmemory_signature));
+	rco = memcmp(m->address + m->size - hmemory_signature_size, &hmemory_signature, hmemory_signature_size);
 	if (rco != 0) {
 		hinfof("%s with corrupted address (%p), overflow", command, address);
 		hinfof("    at: %s (%s:%d)", func, file, line);
@@ -568,6 +639,21 @@ static int debug_memory_check (void *address, const char *command, const char *f
 	hmemory_lock();
 	debug_memory_check_actual(address, command, func, file, line);
 	hmemory_unlock();
+	return 0;
+}
+
+static int debug_memory_overlap (void *s1, void *s2, size_t len, const char *command, const char *func, const char *file, const int line)
+{
+	void *e1;
+	e1 = s1 + len;
+	if (e1 > s2) {
+		hdebug_lock();
+		hinfof("%s with overlapping memory", command);
+		hinfof("    at: %s (%s:%d)", func, file, line);
+		debug_dump_callstack("       ");
+		hdebug_unlock();
+		hassert((e1 <= s2) && "memory overlap");
+	}
 	return 0;
 }
 

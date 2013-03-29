@@ -55,6 +55,13 @@
 
 #define HMEMORY_DEBUG_NAME_MAX			256
 
+#undef memcpy
+#define memcpy(s1, s2, n) ({ \
+	void *__r; \
+	__r = hmemory_memcpy(s1, s2, n); \
+	__r; \
+})
+
 #undef asprintf
 #define asprintf(strp, fmt...) ({ \
 	int __r; \
@@ -133,6 +140,8 @@
 
 #endif
 
+#define hmemory_memcpy(a, b, c)               HMEMORY_FUNCTION_NAME(memcpy_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
+
 #define hmemory_asprintf(a, b...)             HMEMORY_FUNCTION_NAME(asprintf_actual)(__FUNCTION__, __FILE__, __LINE__, a, b)
 #define hmemory_vasprintf(a, b, c)            HMEMORY_FUNCTION_NAME(vasprintf_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
 
@@ -144,7 +153,6 @@
 #define hmemory_realloc(a, b, c)              HMEMORY_FUNCTION_NAME(realloc_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
 #define hmemory_free(a)                       HMEMORY_FUNCTION_NAME(free_actual)(__FUNCTION__, __FILE__, __LINE__, a)
 
-void * HMEMORY_FUNCTION_NAME(memset_actual) (const char *func, const char *file, const int line, void *destination, int c, size_t len);
 void * HMEMORY_FUNCTION_NAME(memcpy_actual) (const char *func, const char *file, const int line, void *destination, void *source, size_t len);
 
 int HMEMORY_FUNCTION_NAME(asprintf_actual) (const char *func, const char *file, const int line, const char *name, char **strp, const char *fmt, ...);
