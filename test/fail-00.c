@@ -22,5 +22,11 @@ int main (int argc, char *argv[])
 		fprintf(stderr, "malloc failed\n");
 		exit(-1);
 	}
+	rc = malloc(1024);
+	if (rc == NULL) {
+		fprintf(stderr, "malloc failed\n");
+		exit(-1);
+	}
+	free(rc);
 	return 0;
 }
