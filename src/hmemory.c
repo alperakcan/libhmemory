@@ -651,7 +651,7 @@ static int debug_memory_overlap (void *s1, void *s2, size_t len, const char *com
 {
 	void *e1;
 	e1 = s1 + len;
-	if (e1 > s2) {
+	if (s2 >= s1 && s2 <= e1) {
 		hdebug_lock();
 		hinfof("%s with overlapping memory", command);
 		hinfof("    at: %s (%s:%d)", func, file, line);
