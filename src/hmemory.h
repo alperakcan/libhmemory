@@ -93,7 +93,7 @@
 #define strndup(string, size) ({ \
 	void *__r; \
 	char __n[HMEMORY_DEBUG_NAME_MAX]; \
-	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "strndup-%p-%d(%s %s:%d)", string, size, __FUNCTION__, __FILE__, __LINE__); \
+	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "strndup-%p-%lld(%s %s:%d)", string, (long long) size, __FUNCTION__, __FILE__, __LINE__); \
 	__r = hmemory_strndup(__n, string, size); \
 	__r; \
 })
@@ -102,7 +102,7 @@
 #define malloc(size) ({ \
 	void *__r; \
 	char __n[HMEMORY_DEBUG_NAME_MAX]; \
-	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "malloc-%d(%s %s:%d)", size, __FUNCTION__, __FILE__, __LINE__); \
+	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "malloc-%lld(%s %s:%d)", (long long) size, __FUNCTION__, __FILE__, __LINE__); \
 	__r = hmemory_malloc(__n, size); \
 	__r; \
 })
@@ -111,7 +111,7 @@
 #define calloc(nmemb, size) ({ \
 	void *__r; \
 	char __n[HMEMORY_DEBUG_NAME_MAX]; \
-	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "calloc-%d,%d(%s %s:%d)", nmemb, size, __FUNCTION__, __FILE__, __LINE__); \
+	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "calloc-%lld,%lld(%s %s:%d)", (long long) nmemb, (long long) size, __FUNCTION__, __FILE__, __LINE__); \
 	__r = hmemory_calloc(__n, nmemb, size); \
 	__r; \
 })
@@ -120,7 +120,7 @@
 #define realloc(address, size) ({ \
 	void *__r; \
 	char __n[HMEMORY_DEBUG_NAME_MAX]; \
-	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "realloc-%p,%d(%s %s:%d)", address, size, __FUNCTION__, __FILE__, __LINE__); \
+	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "realloc-%p,%lld(%s %s:%d)", address, (long long) size, __FUNCTION__, __FILE__, __LINE__); \
 	__r = hmemory_realloc(__n, address, size); \
 	__r; \
 })
