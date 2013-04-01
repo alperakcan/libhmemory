@@ -138,6 +138,9 @@ static inline void free_actual (const char *command, const char *func, const cha
 {
 	void *addr;
 	(void) command;
+	if (address == NULL) {
+		return;
+	}
 	addr = address - hmemory_signature_size;
 	debug_memory_check(addr, command, func, file, line);
 	debug_memory_del(addr, command, func, file, line);
