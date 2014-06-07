@@ -13,7 +13,7 @@ approtiate flags.
 in addition targets may depend each other, so if your target depends on
 target.so just add target.so to target's depend list with;
 
-   target_depends-y = target.so
+    target_depends-y = target.so
 
 targets may also depend to the subdirectories, so target commands will
 not be executed until subdirs commands get executed.
@@ -81,7 +81,13 @@ Available Target Flags
 Usage
 -----
 
- Makefile Example using Makefile.lib
+you can check projects using libmakefile, for detailed information:
+
+  - <a href="https://github.com/anhanguera/libhthread">libhthread</a>, <a href="http://alperakcan.net/projects/libhthread">libhthread</a> 
+  - <a href="https://github.com/anhanguera/libhmemory">libhmemory</a>, <a href="http://alperakcan.net/projects/libhmemory">libhmemory</a> 
+  - <a href="http://sf.net/projects/xynth">xynth</a>, <a href="http://alperakcan.net/projects/xynth">xynth</a>
+
+Makefile Example using Makefile.lib
 
     target-y  = target1
     target-y += target2
