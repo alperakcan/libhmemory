@@ -23,7 +23,8 @@
 #   20100223 - depend file do not depend temp directories
 #   20100319 - files depends to Makefile located in their folder
 #   20100407 - can handle multiple jobs
-#   20130325 - added missin targets for host
+#   20130325 - added missing targets for host
+#   20140721 - cflags per file support
 
 #
 # Example
@@ -114,28 +115,32 @@
 # Available Target Flags
 # ----------------------
 # 
-#     $(target)_makeflags-[y,n, ] : makeflags for target  will be passed to make
-#                                   command only for corresponding target.
-#     $(target)_files-[y,n, ]     : files must match *.[cho] pattern. *.[ch] files
-#                                   will be exemined with $(CC) -M command to
-#                                   generate dependency files (*.dep) files. *.[o]
-#                                   files will be used only in linking stage. all
-#                                   files generated with make command will be
-#                                   removed with $(RM) command.
-#     $(target)_cflags-[y,n, ]    : cflags will be added to global $(CFLAGS) for
-#                                   corresponding target only.
-#     $(target)_cppflags-[y,n, ]  : cppflags will be added to global $(CPPFLAGS)
-#                                   for corresponding target only.
-#     $(target)_includes-[y,n, ]  : a '-I' will be added to all words in includes
-#                                   flag, and will be used only for corresponding
-#                                   target.
-#     $(target)_libraries-[y,n, ] : a '-L' will be added to all words in libraries
-#                                   flag, and will be used only for corresponding
-#                                   target.
-#     $(target)_ldflags-[y,n, ]   : ldflags will be added to gloabal $(LDFLAGS) for
-#                                   corresponding target only.
-#     $(target)_depends-[y,n, ]   : all words in depends flag will be added to
-#                                   prerequisite's list.
+#    $(target)_makeflags-[y,n, ]        : makeflags for target  will be passed to make
+#                                         command only for corresponding target.
+#    $(target)_files-[y,n, ]            : files must match *.[cho] pattern. *.[ch] files
+#                                         will be exemined with $(CC) -M command to
+#                                         generate dependency files (*.dep) files. *.[o]
+#                                         files will be used only in linking stage. all
+#                                         files generated with make command will be
+#                                         removed with $(RM) command.
+#    $(target)_cflags-[y,n, ]           : cflags will be added to global $(CFLAGS) for
+#                                         corresponding target only.
+#    $(target)_cppflags-[y,n, ]         : cppflags will be added to global $(CPPFLAGS)
+#                                         for corresponding target only.
+#    $(target)_${file}_cflags-[y,n, ]   : cflags will be added to global $(CFLAGS) for
+#                                         corresponding target file only.
+#    $(target)_${file}_cppflags-[y,n, ] : cppflags will be added to global $(CPPFLAGS)
+#                                         for corresponding target file only.
+#    $(target)_includes-[y,n, ]         : a '-I' will be added to all words in includes
+#                                         flag, and will be used only for corresponding
+#                                         target.
+#    $(target)_libraries-[y,n, ]        : a '-L' will be added to all words in libraries
+#                                         flag, and will be used only for corresponding
+#                                         target.
+#    $(target)_ldflags-[y,n, ]          : ldflags will be added to gloabal $(LDFLAGS) for
+#                                         corresponding target only.
+#    $(target)_depends-[y,n, ]          : all words in depends flag will be added to
+#                                         prerequisite's list.
 #
 
 TOPDIR ?= $(CURDIR)
@@ -332,7 +337,7 @@ _cmd_depend.c       = $(CC) $(CFLAGS) $(CPPFLAGS) $($1_cflags) $($1_cppflags) \
                       $($1_includes) -M $$< | $(SED) 's,\($$*\.o\) *:,.$1/\1 \
                       $$@: ,' > $$@
 _cmd_compile.c      = $(CC) $(CFLAGS) $(CPPFLAGS) $($1_cflags) $($1_cppflags) \
-                      $($1_includes) -c -o $$@ $$<
+                      $($1_includes) $$($1_$$<_cflags-y) -c -o $$@ $$<
 _cmd_link.c         = $(CC) $(CFLAGS) $(CPPFLAGS) $($1_libraries) -o $$@ $$(subst __FORCE,,$$(subst Makefile,,$$^)) \
                       $($1_ldflags) $(LDFLAGS)
 _cmd_link_so.c      = $(CC) $(CFLAGS) $(CPPFLAGS) $($1_libraries) -o $$@ $$(subst __FORCE,,$$(subst Makefile,,$$^)) \
@@ -342,7 +347,7 @@ _cmd_depend.c.host  = $(HOSTCC) $(CFLAGS) $(CPPFLAGS) $($1_cflags) \
                       $($1_cppflags) $($1_includes) -M $$< | $(SED) \
                       's,\($$*\.o\) *:,.$1/\1 $$@: ,' > $$@
 _cmd_compile.c.host = $(HOSTCC) $(CFLAGS) $(CPPFLAGS) $($1_cflags) \
-                      $($1_cppflags) $($1_includes) -c -o $$@ $$<
+                      $($1_cppflags) $($1_includes) $$($1_$$<_cflags-y) -c -o $$@ $$<
 _cmd_link.c.host    = $(HOSTCC) $(CFLAGS) $(CPPFLAGS) $($1_libraries) -o $$@ $$(subst __FORCE,,$$(subst Makefile,,$$^)) \
                       $($1_ldflags) $(LDFLAGS)
 _cmd_link_so.c.host = $(HOSTCC) $(CFLAGS) $(CPPFLAGS) $($1_libraries) -o $$@ $$(subst __FORCE,,$$(subst Makefile,,$$^)) \
@@ -352,7 +357,7 @@ _cmd_depend.cpp       = $(CPP) $(CFLAGS) $(CPPFLAGS) $($1_cflags) $($1_cppflags)
                         $($1_includes) -M $$< | $(SED) 's,\($$*\.o\) *:,.$1/\1 \
                         $$@: ,' > $$@
 _cmd_compile.cpp      = $(CPP) $(CFLAGS) $(CPPFLAGS) $($1_cflags) $($1_cppflags) \
-                        $($1_includes) -c -o $$@ $$<
+                        $($1_includes) $$($1_$$<_cppflags-y) -c -o $$@ $$<
 _cmd_link.cpp         = $(CPP) $(CFLAGS) $(CPPFLAGS) $($1_libraries) -o $$@ $$(subst __FORCE,,$$(subst Makefile,,$$^)) \
                         $($1_ldflags) $(LDFLAGS)
 _cmd_link_so.cpp      = $(CPP) $(CFLAGS) $(CPPFLAGS) $($1_libraries) -o $$@ $$(subst __FORCE,,$$(subst Makefile,,$$^)) \
@@ -362,7 +367,7 @@ _cmd_depend.cpp.host  = $(HOSTCPP) $(CFLAGS) $(CPPFLAGS) $($1_cflags) \
                         $($1_cppflags) $($1_includes) -M $$< | $(SED) \
                         's,\($$*\.o\) *:,.$1/\1 $$@: ,' > $$@
 _cmd_compile.cpp.host = $(HOSTCPP) $(CFLAGS) $(CPPFLAGS) $($1_cflags) \
-                        $($1_cppflags) $($1_includes) -c -o $$@ $$<
+                        $($1_cppflags) $($1_includes) $$($1_$$<_cppflags-y) -c -o $$@ $$<
 _cmd_link.cpp.host    = $(HOSTCPP) $(CFLAGS) $(CPPFLAGS) $($1_libraries) -o $$@ $$(subst __FORCE,,$$(subst Makefile,,$$^)) \
                         $($1_ldflags) $(LDFLAGS)
 _cmd_link_so.cpp.host = $(HOSTCPP) $(CFLAGS) $(CPPFLAGS) $($1_libraries) -o $$@ $$(subst __FORCE,,$$(subst Makefile,,$$^)) \
@@ -372,7 +377,7 @@ _cmd_depend.m         = $(CC) $(CFLAGS) $(CPPFLAGS) $($1_cflags) $($1_cppflags) 
                         $($1_includes) -M $$< | $(SED) 's,\($$*\.o\) *:,.$1/\1 \
                         $$@: ,' > $$@
 _cmd_compile.m        = $(CC) $(CFLAGS) $(CPPFLAGS) $($1_cflags) $($1_cppflags) \
-                        $($1_includes) -c -o $$@ $$<
+                        $($1_includes) $$($1_$$<_cflags-y) -c -o $$@ $$<
 _cmd_link.m           = $(CC) $(CFLAGS) $(CPPFLAGS) $($1_libraries) -o $$@ $$(subst __FORCE,,$$(subst Makefile,,$$^)) \
                         $($1_ldflags) $(LDFLAGS)
 _cmd_link_so.m        = $(CC) $(CFLAGS) $(CPPFLAGS) $($1_libraries) -o $$@ $$(subst __FORCE,,$$(subst Makefile,,$$^)) \
@@ -382,7 +387,7 @@ _cmd_depend.m.host    = $(HOSTCC) $(CFLAGS) $(CPPFLAGS) $($1_cflags) \
                         $($1_cppflags) $($1_includes) -M $$< | $(SED) \
                         's,\($$*\.o\) *:,.$1/\1 $$@: ,' > $$@
 _cmd_compile.m.host   = $(HOSTCC) $(CFLAGS) $(CPPFLAGS) $($1_cflags) \
-                        $($1_cppflags) $($1_includes) -c -o $$@ $$<
+                        $($1_cppflags) $($1_includes) $$($1_$$<_cflags-y) -c -o $$@ $$<
 _cmd_link.m.host      = $(HOSTCC) $(CFLAGS) $(CPPFLAGS) $($1_libraries) -o $$@ $$(subst __FORCE,,$$(subst Makefile,,$$^)) \
                         $($1_ldflags) $(LDFLAGS)
 _cmd_link_so.m.host   = $(HOSTCC) $(CFLAGS) $(CPPFLAGS) $($1_libraries) -o $$@ $$(subst __FORCE,,$$(subst Makefile,,$$^)) \
