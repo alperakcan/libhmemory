@@ -153,7 +153,7 @@
 #define hmemory_realloc(a, b, c)              HMEMORY_FUNCTION_NAME(realloc_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
 #define hmemory_free(a)                       HMEMORY_FUNCTION_NAME(free_actual)(__FUNCTION__, __FILE__, __LINE__, a)
 
-void * HMEMORY_FUNCTION_NAME(memcpy_actual) (const char *func, const char *file, const int line, void *destination, void *source, size_t len);
+void * HMEMORY_FUNCTION_NAME(memcpy_actual) (const char *func, const char *file, const int line, void *destination, const void *source, size_t len);
 
 int HMEMORY_FUNCTION_NAME(asprintf_actual) (const char *func, const char *file, const int line, const char *name, char **strp, const char *fmt, ...);
 int HMEMORY_FUNCTION_NAME(vasprintf_actual) (const char *func, const char *file, const int line, const char *name, char **strp, const char *fmt, va_list ap);
