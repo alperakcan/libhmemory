@@ -102,7 +102,7 @@ static inline int hmemory_getenv_int (const char *name);
 static inline int debug_dump_callstack (const char *prefix);
 static inline int debug_memory_add (const char *name, void *address, size_t size, const char *command, const char *func, const char *file, const int line);
 static inline int debug_memory_check (void *address, const char *command, const char *func, const char *file, const int line);
-static inline int debug_memory_overlap (void *s1, void *s2, size_t len, const char *command, const char *func, const char *file, const int line);
+static inline int debug_memory_overlap (void *s1, const void *s2, size_t len, const char *command, const char *func, const char *file, const int line);
 static inline int debug_memory_del (void *address, const char *command, const char *func, const char *file, const int line);
 
 #else
@@ -147,7 +147,7 @@ static inline void free_actual (const char *command, const char *func, const cha
 	free(addr);
 }
 
-void * HMEMORY_FUNCTION_NAME(memcpy_actual) (const char *func, const char *file, const int line, void *s1, void *s2, size_t len)
+void * HMEMORY_FUNCTION_NAME(memcpy_actual) (const char *func, const char *file, const int line, void *s1, const void *s2, size_t len)
 {
 	debug_memory_overlap(s1, s2, len, "memcpy", func, file, line);
 	return memcpy(s1, s2, len);
@@ -650,7 +650,7 @@ static int debug_memory_check (void *address, const char *command, const char *f
 	return 0;
 }
 
-static int debug_memory_overlap (void *s1, void *s2, size_t len, const char *command, const char *func, const char *file, const int line)
+static int debug_memory_overlap (void *s1, const void *s2, size_t len, const char *command, const char *func, const char *file, const int line)
 {
 	void *e1;
 	e1 = s1 + len;
