@@ -330,7 +330,6 @@ void * HMEMORY_FUNCTION_NAME(realloc_actual) (const char *func, const char *file
 {
 	void *rc;
 #if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
-	void *tmp;
 	void *addr;
 	if (address == NULL) {
 		rc = malloc_actual("realloc", func, file, line, name, size);
@@ -340,6 +339,7 @@ void * HMEMORY_FUNCTION_NAME(realloc_actual) (const char *func, const char *file
 		}
 		return rc;
 	}
+	size += hmemory_signature_size * 2;
 	addr = address - hmemory_signature_size;
 	debug_memory_check(addr, "realloc", func, file, line);
 	rc = realloc(addr, size);
@@ -348,10 +348,9 @@ void * HMEMORY_FUNCTION_NAME(realloc_actual) (const char *func, const char *file
 		return NULL;
 	}
 	debug_memory_del(addr, "realloc", func, file, line);
-	tmp = malloc_actual("realloc", func, file, line, name, size);
-	memcpy(tmp, rc, size);
-	free(rc);
-	rc = tmp;
+	debug_memory_add(name, rc, size, "realloc", func, file, line);
+	debug_memory_check(rc, "realloc", func, file, line);
+	return rc + hmemory_signature_size;
 #else
 	(void) name;
 	(void) func;
