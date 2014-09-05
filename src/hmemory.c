@@ -787,7 +787,8 @@ static void * hmemory_worker (void *arg)
 	while (1) {
 		v = hmemory_getenv_int(HMEMORY_CORRUPTION_CHECK_INTERVAL_NAME);
 		if (v == (unsigned int) -1) {
-			v = HMEMORY_CORRUPTION_CHECK_INTERVAL;
+			sleep(1);
+			continue;
 		}
 		gettimeofday(&tval, NULL);
 		tspec.tv_sec = tval.tv_sec + (v / 1000);
