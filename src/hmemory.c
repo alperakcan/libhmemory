@@ -776,6 +776,7 @@ found_m:
 
 static void * hmemory_worker (void *arg)
 {
+	int check;
 	unsigned int v;
 	struct timeval tval;
 	struct timespec tspec;
@@ -785,10 +786,11 @@ static void * hmemory_worker (void *arg)
 #endif
 	(void) arg;
 	while (1) {
+		check = 1;
 		v = hmemory_getenv_int(HMEMORY_CORRUPTION_CHECK_INTERVAL_NAME);
 		if (v == (unsigned int) -1) {
-			sleep(1);
-			continue;
+			check = 0;
+			v = HMEMORY_CORRUPTION_CHECK_INTERVAL;
 		}
 		gettimeofday(&tval, NULL);
 		tspec.tv_sec = tval.tv_sec + (v / 1000);
@@ -804,6 +806,10 @@ static void * hmemory_worker (void *arg)
 		if (hmemory_worker_running == 0) {
 			hmemory_unlock();
 			break;
+		}
+		if (check == 0) {
+			hmemory_unlock();
+			continue;
 		}
 #if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 		HASH_ITER(hh, debug_memory, m, nm) {
