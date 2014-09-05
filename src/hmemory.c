@@ -24,7 +24,11 @@
 #define HMEMORY_INTERNAL			1
 #define HMEMORY_CALLSTACK_MAX			128
 
+#define HMEMORY_HASH_UTHASH			0
+#define HMEMORY_HASH_KHASH			1
+
 #include "hmemory.h"
+#include "khash.h"
 #include "uthash.h"
 
 #if defined(HMEMORY_ENABLE_CALLSTACK) && (HMEMORY_ENABLE_CALLSTACK == 1)
@@ -342,12 +346,13 @@ void * HMEMORY_FUNCTION_NAME(realloc_actual) (const char *func, const char *file
 	size += hmemory_signature_size * 2;
 	addr = address - hmemory_signature_size;
 	debug_memory_check(addr, "realloc", func, file, line);
+	debug_memory_del(addr, "realloc", func, file, line);
 	rc = realloc(addr, size);
 	if (rc == NULL) {
+		debug_memory_add(name, addr, size, "realloc", func, file, line);
 		herrorf("realloc failed");
 		return NULL;
 	}
-	debug_memory_del(addr, "realloc", func, file, line);
 	debug_memory_add(name, rc, size, "realloc", func, file, line);
 	debug_memory_check(rc, "realloc", func, file, line);
 	return rc + hmemory_signature_size;
@@ -536,13 +541,21 @@ static inline int debug_dump_callstack (const char *prefix)
 #define MAX(a, b)				(((a) > (b)) ? (a) : (b))
 #endif
 
+#if defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+#define hmemory_int64_hash_func(key) (khint32_t)(((uint64_t) key)>>33^((uint64_t) key)^((uint64_t) key)<<11)
+KHASH_INIT(memory, void *, struct hmemory_memory *, 1, hmemory_int64_hash_func, kh_int64_hash_equal);
+#endif
+
 struct hmemory_memory {
 	void *address;
-	UT_hash_handle hh;
 	const char *func;
 	const char *file;
 	int line;
 	size_t size;
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
+	UT_hash_handle hh;
+#elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+#endif
 	char name[0];
 };
 
@@ -550,7 +563,11 @@ static pthread_t hmemory_thread;
 static int hmemory_worker_started		= 0;
 static int hmemory_worker_running		= 0;
 
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 static struct hmemory_memory *debug_memory	= NULL;
+#elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+static khash_t(memory) *debug_memory		= NULL;
+#endif
 static unsigned long long memory_peak		= 0;
 static unsigned long long memory_current	= 0;
 static unsigned long long memory_total		= 0;
@@ -559,11 +576,24 @@ static int debug_memory_add (const char *name, void *address, size_t size, const
 {
 	unsigned int s;
 	struct hmemory_memory *m;
+#if defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+	int rc;
+	khiter_t k;
+#endif
 	if (address == NULL) {
 		return 0;
 	}
 	hmemory_lock();
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 	HASH_FIND_PTR(debug_memory, &address, m);
+#elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+	k = kh_get(memory, debug_memory, address);
+	if (k == kh_end(debug_memory)) {
+		m = NULL;
+	} else {
+		m = kh_val(debug_memory, k);
+	}
+#endif
 	if (m != NULL) {
 		hdebug_lock();
 		hinfof("%s with invalid memory (%p)", command, address);
@@ -589,7 +619,26 @@ static int debug_memory_add (const char *name, void *address, size_t size, const
 	m->line = line;
 	memcpy(m->address, &hmemory_signature, hmemory_signature_size);
 	memcpy(m->address + m->size - hmemory_signature_size, &hmemory_signature, hmemory_signature_size);
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 	HASH_ADD_PTR(debug_memory, address, m);
+#elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+	k = kh_put(memory, debug_memory, address, &rc);
+	if (rc == -1) {
+		hdebug_lock();
+		hinfof("%s with invalid memory (%p)", command, address);
+		hinfof("    at: %s (%s:%d)", func, file, line);
+		hinfof("  ");
+		hinfof("  if it is certain that program is memory bug free, then hmemory");
+		hinfof("  may have a serious bug that needs to be fixed urgent. please ");
+		hinfof("  inform author");
+		hinfof("    at: alper.akcan@gmail.com");
+		hdebug_unlock();
+		hassert((rc == -1) && "invalid memory key");
+		hmemory_unlock();
+		return -1;
+	}
+	kh_value(debug_memory, k) = m;
+#endif
 	hdebugf("%s added memory: %s, address: %p, size: %zd, func: %s, file: %s, line: %d", command, m->name, m->address, m->size, m->func, m->file, m->line);
 	memory_total += size;
 	memory_current += size;
@@ -603,10 +652,22 @@ static int debug_memory_check_actual (void *address, const char *command, const 
 	int rcu;
 	int rco;
 	struct hmemory_memory *m;
+#if defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+	khiter_t k;
+#endif
 	if (address == NULL) {
 		return 0;
 	}
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 	HASH_FIND_PTR(debug_memory, &address, m);
+#elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+	k = kh_get(memory, debug_memory, address);
+	if (k == kh_end(debug_memory)) {
+		m = NULL;
+	} else {
+		m = kh_val(debug_memory, k);
+	}
+#endif
 	if (m != NULL) {
 		goto found_m;
 	}
@@ -666,12 +727,24 @@ static int debug_memory_overlap (void *s1, const void *s2, size_t len, const cha
 
 static int debug_memory_del (void *address, const char *command, const char *func, const char *file, const int line)
 {
+#if defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+	khiter_t k;
+#endif
 	struct hmemory_memory *m;
 	if (address == NULL) {
 		return 0;
 	}
 	hmemory_lock();
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 	HASH_FIND_PTR(debug_memory, &address, m);
+#elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+	k = kh_get(memory, debug_memory, address);
+	if (k == kh_end(debug_memory)) {
+		m = NULL;
+	} else {
+		m = kh_val(debug_memory, k);
+	}
+#endif
 	if (m != NULL) {
 		goto found_m;
 	}
@@ -689,7 +762,11 @@ static int debug_memory_del (void *address, const char *command, const char *fun
 	hmemory_unlock();
 	return -1;
 found_m:
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 	HASH_DEL(debug_memory, m);
+#elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+	kh_del(memory, debug_memory, k);
+#endif
 	hdebugf("%s deleted memory: %s, address: %p, size: %zd, func: %s, file: %s, line: %d", command, m->name, m->address, m->size, m->func, m->file, m->line);
 	memory_current -= m->size;
 	free(m);
@@ -703,7 +780,9 @@ static void * hmemory_worker (void *arg)
 	struct timeval tval;
 	struct timespec tspec;
 	struct hmemory_memory *m;
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 	struct hmemory_memory *nm;
+#endif
 	(void) arg;
 	while (1) {
 		v = hmemory_getenv_int(HMEMORY_CORRUPTION_CHECK_INTERVAL_NAME);
@@ -725,9 +804,17 @@ static void * hmemory_worker (void *arg)
 			hmemory_unlock();
 			break;
 		}
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 		HASH_ITER(hh, debug_memory, m, nm) {
+#elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+		kh_foreach_value(debug_memory, m,
+#endif
 			debug_memory_check_actual(m->address, "worker check", __FUNCTION__, __FILE__, __LINE__);
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 		}
+#elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+		)
+#endif
 		hmemory_unlock();
 	}
 	return NULL;
@@ -737,6 +824,9 @@ static void __attribute__ ((constructor)) hmemory_init (void)
 {
 	int rc;
 	hmemory_lock();
+#if defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+	debug_memory = kh_init(memory);
+#endif
 	hmemory_worker_started = 1;
 	hmemory_worker_running = 1;
 	rc = pthread_create(&hmemory_thread, NULL, hmemory_worker, NULL);
@@ -751,7 +841,9 @@ static void __attribute__ ((constructor)) hmemory_init (void)
 static void __attribute__ ((destructor)) hmemory_fini (void)
 {
 	struct hmemory_memory *m;
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 	struct hmemory_memory *nm;
+#endif
 	hmemory_lock();
 	if (hmemory_worker_running == 1) {
 		hmemory_worker_running = 0;
@@ -765,17 +857,38 @@ static void __attribute__ ((destructor)) hmemory_fini (void)
 	hinfof("    current: %llu bytes (%.02f mb)", memory_current, ((double) memory_current) / (1024.00 * 1024.00));
 	hinfof("    peak   : %llu bytes (%.02f mb)", memory_peak, ((double) memory_peak) / (1024.00 * 1024.00));
 	hinfof("    total  : %llu bytes (%.02f mb)", memory_total, ((double) memory_total) / (1024.00 * 1024.00));
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 	hinfof("    leaks  : %d items", HASH_COUNT(debug_memory));
+#elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+	hinfof("    leaks  : %d items", kh_size(debug_memory));
+#endif
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 	if (HASH_COUNT(debug_memory) > 0) {
+#elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+	if (kh_size(debug_memory) > 0) {
+#endif
 		hinfof("  memory leaks:");
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 		HASH_ITER(hh, debug_memory, m, nm) {
+#elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+		kh_foreach_value(debug_memory, m,
+#endif
 			hinfof("    - %zd bytes at: %s (%s:%u)", m->size, m->func, m->file, m->line);
+#if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 			HASH_DEL(debug_memory, m);
 			free(m->address);
 			free(m);
 		}
+#elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+			free(m->address);
+			free(m);
+		)
+#endif
 		hassert(0 && "memory leak");
 	}
+#if defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
+	kh_destroy(memory, debug_memory);
+#endif
 	hdebug_unlock();
 	hmemory_unlock();
 }
