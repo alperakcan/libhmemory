@@ -640,8 +640,8 @@ static int debug_memory_add (const char *name, void *address, size_t size, const
 	kh_value(debug_memory, k) = m;
 #endif
 	hdebugf("%s added memory: %s, address: %p, size: %zd, func: %s, file: %s, line: %d", command, m->name, m->address, m->size, m->func, m->file, m->line);
-	memory_total += size;
-	memory_current += size;
+	memory_total += (size - (hmemory_signature_size * 2));
+	memory_current += (size - (hmemory_signature_size * 2));
 	memory_peak = MAX(memory_peak, memory_current);
 	hmemory_unlock();
 	return 0;
@@ -768,7 +768,7 @@ found_m:
 	kh_del(memory, debug_memory, k);
 #endif
 	hdebugf("%s deleted memory: %s, address: %p, size: %zd, func: %s, file: %s, line: %d", command, m->name, m->address, m->size, m->func, m->file, m->line);
-	memory_current -= m->size;
+	memory_current -= (m->size - (hmemory_signature_size * 2));
 	free(m);
 	hmemory_unlock();
 	return 0;
