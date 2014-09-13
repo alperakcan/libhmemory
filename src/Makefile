@@ -50,4 +50,12 @@ libhmemory-debug.o_cflags-y += \
 	-DHMEMORY_ASSERT_ON_ERROR=${HMEMORY_ASSERT_ON_ERROR}
 endif
 
+distdir = ../dist
+
+dist.lib-y = \
+	libhmemory.so
+
+dist.include-y = \
+	hmemory.h
+
 include ../Makefile.lib
