@@ -55,12 +55,16 @@
 
 #define HMEMORY_DEBUG_NAME_MAX			256
 
+#ifndef __cplusplus
+
 #undef memcpy
 #define memcpy(s1, s2, n) ({ \
 	void *__hmemory_r; \
 	__hmemory_r = hmemory_memcpy((s1), (s2), (n)); \
 	__hmemory_r; \
 })
+
+#endif
 
 #undef asprintf
 #define asprintf(strp, fmt...) ({ \
