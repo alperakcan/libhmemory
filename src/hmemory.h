@@ -57,72 +57,72 @@
 
 #undef memcpy
 #define memcpy(s1, s2, n) ({ \
-	void *__r; \
-	__r = hmemory_memcpy(s1, s2, n); \
-	__r; \
+	void *__hmemory_r; \
+	__hmemory_r = hmemory_memcpy((s1), (s2), (n)); \
+	__hmemory_r; \
 })
 
 #undef asprintf
 #define asprintf(strp, fmt...) ({ \
-	int __r; \
-	char __n[HMEMORY_DEBUG_NAME_MAX]; \
-	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "asprintf(%s %s:%d)", __FUNCTION__, __FILE__, __LINE__); \
-	__r = hmemory_asprintf(__n, strp, fmt); \
-	__r; \
+	int __hmemory_r; \
+	char __hmemory_n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "asprintf(%s %s:%d)", __FUNCTION__, __FILE__, __LINE__); \
+	__hmemory_r = hmemory_asprintf(__hmemory_n, strp, fmt); \
+	__hmemory_r; \
 })
 
 #undef vasprintf
 #define vasprintf(strp, fmt, ap) ({ \
-	int __r; \
-	char __n[HMEMORY_DEBUG_NAME_MAX]; \
-	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "vasprintf(%s %s:%d)", __FUNCTION__, __FILE__, __LINE__); \
-	__r = hmemory_vasprintf(__n, strp, fmt); \
-	__r; \
+	int __hmemory_r; \
+	char __hmemory_n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "vasprintf(%s %s:%d)", __FUNCTION__, __FILE__, __LINE__); \
+	__hmemory_r = hmemory_vasprintf(__hmemory_n, strp, fmt); \
+	__hmemory_r; \
 })
 
 #undef strdup
 #define strdup(string) ({ \
-	void *__r; \
-	char __n[HMEMORY_DEBUG_NAME_MAX]; \
-	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "strdup-%p(%s %s:%d)", string, __FUNCTION__, __FILE__, __LINE__); \
-	__r = hmemory_strdup(__n, string); \
-	__r; \
+	void *__hmemory_r; \
+	char __hmemory_n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "strdup-%p(%s %s:%d)", string, __FUNCTION__, __FILE__, __LINE__); \
+	__hmemory_r = hmemory_strdup(__hmemory_n, string); \
+	__hmemory_r; \
 })
 
 #undef strndup
 #define strndup(string, size) ({ \
-	void *__r; \
-	char __n[HMEMORY_DEBUG_NAME_MAX]; \
-	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "strndup-%p-%lld(%s %s:%d)", string, (long long) size, __FUNCTION__, __FILE__, __LINE__); \
-	__r = hmemory_strndup(__n, string, size); \
-	__r; \
+	void *__hmemory_r; \
+	char __hmemory_n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "strndup-%p-%lld(%s %s:%d)", string, (long long) size, __FUNCTION__, __FILE__, __LINE__); \
+	__hmemory_r = hmemory_strndup(__hmemory_n, string, size); \
+	__hmemory_r; \
 })
 
 #undef malloc
 #define malloc(size) ({ \
-	void *__r; \
-	char __n[HMEMORY_DEBUG_NAME_MAX]; \
-	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "malloc-%lld(%s %s:%d)", (long long) size, __FUNCTION__, __FILE__, __LINE__); \
-	__r = hmemory_malloc(__n, size); \
-	__r; \
+	void *__hmemory_r; \
+	char __hmemory_n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "malloc-%lld(%s %s:%d)", (long long) (size), __FUNCTION__, __FILE__, __LINE__); \
+	__hmemory_r = hmemory_malloc((__hmemory_n), (size)); \
+	__hmemory_r; \
 })
 
 #undef calloc
 #define calloc(nmemb, size) ({ \
-	void *__r; \
-	char __n[HMEMORY_DEBUG_NAME_MAX]; \
-	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "calloc-%lld,%lld(%s %s:%d)", (long long) nmemb, (long long) size, __FUNCTION__, __FILE__, __LINE__); \
-	__r = hmemory_calloc(__n, nmemb, size); \
-	__r; \
+	void *__hmemory_r; \
+	char __hmemory_n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "calloc-%lld,%lld(%s %s:%d)", (long long) nmemb, (long long) size, __FUNCTION__, __FILE__, __LINE__); \
+	__hmemory_r = hmemory_calloc(__hmemory_n, nmemb, size); \
+	__hmemory_r; \
 })
 
 #undef realloc
 #define realloc(address, size) ({ \
-	void *__r; \
-	char __n[HMEMORY_DEBUG_NAME_MAX]; \
-	snprintf(__n, HMEMORY_DEBUG_NAME_MAX, "realloc-%p,%lld(%s %s:%d)", address, (long long) size, __FUNCTION__, __FILE__, __LINE__); \
-	__r = hmemory_realloc(__n, address, size); \
-	__r; \
+	void *__hmemory_r; \
+	char __hmemory_n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "realloc-%p,%lld(%s %s:%d)", address, (long long) size, __FUNCTION__, __FILE__, __LINE__); \
+	__hmemory_r = hmemory_realloc(__hmemory_n, address, size); \
+	__hmemory_r; \
 })
 
 #undef free
@@ -153,6 +153,10 @@
 #define hmemory_realloc(a, b, c)              HMEMORY_FUNCTION_NAME(realloc_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
 #define hmemory_free(a)                       HMEMORY_FUNCTION_NAME(free_actual)(__FUNCTION__, __FILE__, __LINE__, a)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void * HMEMORY_FUNCTION_NAME(memcpy_actual) (const char *func, const char *file, const int line, void *destination, const void *source, size_t len);
 
 int HMEMORY_FUNCTION_NAME(asprintf_actual) (const char *func, const char *file, const int line, const char *name, char **strp, const char *fmt, ...);
@@ -165,5 +169,9 @@ void * HMEMORY_FUNCTION_NAME(malloc_actual) (const char *func, const char *file,
 void * HMEMORY_FUNCTION_NAME(calloc_actual) (const char *func, const char *file, const int line, const char *name, size_t nmemb, size_t size);
 void * HMEMORY_FUNCTION_NAME(realloc_actual) (const char *func, const char *file, const int line, const char *name, void *address, size_t size);
 void HMEMORY_FUNCTION_NAME(free_actual) (const char *func, const char *file, const int line, void *address);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

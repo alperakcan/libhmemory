@@ -71,7 +71,7 @@ hmemory configuration parameters can be set using <tt>make flags</tt>, please ch
 
   default 5000
   
-  memory corruption checking interval in miliseconds
+  memory corruption checking interval in miliseconds, use -1 to disable.
 
 ### 2.2. run-time options ###
   
@@ -97,7 +97,7 @@ please check example section for demonstration.
 
   default 5000
   
-  memory corruption checking interval in miliseconds
+  memory corruption checking interval in miliseconds, use -1 to disable.
   
 ## 3. error reports ##
 
