@@ -26,15 +26,22 @@ libhmemory-debug.o_files-y = \
 libhmemory-debug.o_cflags-y = \
 	-DHMEMORY_DEBUG=1
 
-ifneq (${HMEMORY_ENABLE_CALLSTACK}, )
+libhmemory.so_ldflags-y += \
+	-lpthread
+
+ifeq (${HMEMORY_ENABLE_CALLSTACK}, y)
 libhmemory-actual.o_cflags-y += \
 	-DHMEMORY_ENABLE_CALLSTACK=${HMEMORY_ENABLE_CALLSTACK}
 
 libhmemory-debug.o_cflags-y += \
 	-DHMEMORY_ENABLE_CALLSTACK=${HMEMORY_ENABLE_CALLSTACK}
+
+libhmemory.so_ldflags-y += \
+	-ldl \
+	-lbfd
 endif
 
-ifneq (${HMEMORY_REPORT_CALLSTACK}, )
+ifeq (${HMEMORY_REPORT_CALLSTACK}, y)
 libhmemory-actual.o_cflags-y += \
 	-DHMEMORY_REPORT_CALLSTACK=${HMEMORY_REPORT_CALLSTACK}
 
