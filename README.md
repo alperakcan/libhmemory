@@ -50,14 +50,14 @@ hmemory configuration parameters can be set using <tt>make flags</tt>, please ch
 
 - HMEMORY_ENABLE_CALLSTACK
   
-  default 1
+  default 0
   
   enable/disable reporting call trace information on error, useful but depends on <tt>libbdf</tt>, <tt>libdl</tt>, and
   <tt>backtrace function from glibc</tt>. may be disabled for toolchains which does not support backtracing.
   
 - HMEMORY_REPORT_CALLSTACK
 
-  default 1
+  default 0
   
   dump callstack info (function call history) for error point.
   
@@ -73,6 +73,12 @@ hmemory configuration parameters can be set using <tt>make flags</tt>, please ch
   
   memory corruption checking interval in miliseconds, use -1 to disable.
 
+- HMEMORY_SHOW_REACHABLE
+
+  default 0
+  
+  show reachable memory on exit
+
 ### 2.2. run-time options ###
   
 hmemory reads configuration parameters from environment via getenv function call. one can either set/change environment
@@ -83,7 +89,7 @@ please check example section for demonstration.
 
 - hmemory_report_callstack
   
-  default 1
+  default 0
   
   dump callstack info (function call history) for error point.
 
@@ -98,6 +104,12 @@ please check example section for demonstration.
   default 5000
   
   memory corruption checking interval in miliseconds, use -1 to disable.
+  
+- hmemory_show_reachable
+
+  default 0
+  
+  show reachable memory on exit
   
 ## 3. error reports ##
 
