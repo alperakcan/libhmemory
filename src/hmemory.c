@@ -847,6 +847,7 @@ static void __attribute__ ((constructor)) hmemory_init (void)
 
 static void __attribute__ ((destructor)) hmemory_fini (void)
 {
+	int show_reachable;
 	struct hmemory_memory *m;
 #if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 	struct hmemory_memory *nm;
@@ -869,10 +870,11 @@ static void __attribute__ ((destructor)) hmemory_fini (void)
 #elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
 	hinfof("    leaks  : %d items", kh_size(debug_memory));
 #endif
+	show_reachable = hmemory_getenv_int(HMEMORY_SHOW_REACHABLE_NAME);
 #if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
-	if (HASH_COUNT(debug_memory) > 0) {
+	if (HASH_COUNT(debug_memory) > 0 && show_reachable == 1) {
 #elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
-	if (kh_size(debug_memory) > 0) {
+	if (kh_size(debug_memory) > 0 && show_reachable == 1) {
 #endif
 		hinfof("  memory leaks:");
 #if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)

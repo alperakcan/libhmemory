@@ -39,6 +39,11 @@
 #endif
 #define HMEMORY_CORRUPTION_CHECK_INTERVAL_NAME	"hmemory_corruption_check_interval"
 
+#if !defined(HMEMORY_SHOW_REACHABLE)
+#define HMEMORY_SHOW_REACHABLE			0
+#endif
+#define HMEMORY_SHOW_REACHABLE_NAME	"hmemory_show_reachable"
+
 #if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
 
 #if !defined(HMEMORY_INTERNAL) || (HMEMORY_INTERNAL == 0)
