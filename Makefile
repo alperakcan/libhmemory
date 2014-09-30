@@ -11,6 +11,7 @@ include Makefile.lib
 tests: test
 	${Q}( \
 	  export hmemory_corruption_check_interval=250; \
+	  export hmemory_show_reachable=1; \
 	  sc=0; \
 	  ss=0; \
 	  sf=0; \
