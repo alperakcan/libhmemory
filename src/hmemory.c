@@ -882,7 +882,7 @@ static void __attribute__ ((destructor)) hmemory_fini (void)
 #elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
 		kh_foreach_value(debug_memory, m,
 #endif
-			hinfof("    - %zd bytes at: %s (%s:%u)", m->size, m->func, m->file, m->line);
+			hinfof("    - %zd bytes at: %p %s (%s:%u)", m->size, m->address + hmemory_signature_size, m->func, m->file, m->line);
 #if defined(HMEMORY_HASH_UTHASH) && (HMEMORY_HASH_UTHASH == 1)
 			HASH_DEL(debug_memory, m);
 			free(m->address);
