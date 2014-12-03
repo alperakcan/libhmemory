@@ -120,7 +120,7 @@
 #define calloc(nmemb, size) ({ \
 	void *__hmemory_r; \
 	char __hmemory_n[HMEMORY_DEBUG_NAME_MAX]; \
-	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "calloc-%lld,%lld(%s %s:%d)", (long long) nmemb, (long long) size, __FUNCTION__, __FILE__, __LINE__); \
+	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "calloc-%lld,%lld(%s %s:%d)", (long long) nmemb, (long long) (size), __FUNCTION__, __FILE__, __LINE__); \
 	__hmemory_r = hmemory_calloc(__hmemory_n, nmemb, size); \
 	__hmemory_r; \
 })
@@ -129,7 +129,7 @@
 #define realloc(address, size) ({ \
 	void *__hmemory_r; \
 	char __hmemory_n[HMEMORY_DEBUG_NAME_MAX]; \
-	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "realloc-%p,%lld(%s %s:%d)", address, (long long) size, __FUNCTION__, __FILE__, __LINE__); \
+	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "realloc-%p,%lld(%s %s:%d)", address, (long long) (size), __FUNCTION__, __FILE__, __LINE__); \
 	__hmemory_r = hmemory_realloc(__hmemory_n, address, size); \
 	__hmemory_r; \
 })
