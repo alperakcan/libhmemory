@@ -76,7 +76,7 @@
 	int __hmemory_r; \
 	char __hmemory_n[HMEMORY_DEBUG_NAME_MAX]; \
 	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "getline(%s %s:%d)", __FUNCTION__, __FILE__, __LINE__); \
-	__hmemory_r = hmemory_getline(__hmemory_n, strp, n stream); \
+	__hmemory_r = hmemory_getline(__hmemory_n, strp, n, stream); \
 	__hmemory_r; \
 })
 
