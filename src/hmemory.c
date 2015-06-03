@@ -819,10 +819,10 @@ static void * hmemory_worker (void *arg)
 	(void) arg;
 	while (1) {
 		check = 1;
-		v = hmemory_getenv_int(HMEMORY_CORRUPTION_CHECK_INTERVAL_NAME);
+		v = hmemory_getenv_int(HMEMORY_CHECK_INTERVAL_NAME);
 		if (v == (unsigned int) -1) {
 			check = 0;
-			v = HMEMORY_CORRUPTION_CHECK_INTERVAL;
+			v = HMEMORY_CHECK_INTERVAL;
 		}
 		gettimeofday(&tval, NULL);
 		tspec.tv_sec = tval.tv_sec + (v / 1000);
@@ -854,6 +854,7 @@ static void * hmemory_worker (void *arg)
 #elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
 		)
 #endif
+		debug_dump_callstack("       ");
 		hmemory_unlock();
 	}
 	return NULL;

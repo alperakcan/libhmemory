@@ -34,15 +34,15 @@
 #endif
 #define HMEMORY_ASSERT_ON_ERROR_NAME		"hmemory_assert_on_error"
 
-#if !defined(HMEMORY_CORRUPTION_CHECK_INTERVAL)
-#define HMEMORY_CORRUPTION_CHECK_INTERVAL	5000
+#if !defined(HMEMORY_CHECK_INTERVAL)
+#define HMEMORY_CHECK_INTERVAL			5000
 #endif
-#define HMEMORY_CORRUPTION_CHECK_INTERVAL_NAME	"hmemory_corruption_check_interval"
+#define HMEMORY_CHECK_INTERVAL_NAME		"hmemory_check_interval"
 
 #if !defined(HMEMORY_SHOW_REACHABLE)
 #define HMEMORY_SHOW_REACHABLE			0
 #endif
-#define HMEMORY_SHOW_REACHABLE_NAME	"hmemory_show_reachable"
+#define HMEMORY_SHOW_REACHABLE_NAME		"hmemory_show_reachable"
 
 #if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
 
