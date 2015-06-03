@@ -160,7 +160,7 @@
 
 #define hmemory_memcpy(a, b, c)               HMEMORY_FUNCTION_NAME(memcpy_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
 
-#define hmemory_getline(a, b, c)             HMEMORY_FUNCTION_NAME(getline_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
+#define hmemory_getline(a, b, c, d)           HMEMORY_FUNCTION_NAME(getline_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c, d)
 
 #define hmemory_asprintf(a, b...)             HMEMORY_FUNCTION_NAME(asprintf_actual)(__FUNCTION__, __FILE__, __LINE__, a, b)
 #define hmemory_vasprintf(a, b, c)            HMEMORY_FUNCTION_NAME(vasprintf_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
