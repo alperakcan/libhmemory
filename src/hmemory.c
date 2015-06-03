@@ -859,7 +859,10 @@ static void * hmemory_worker (void *arg)
 #elif defined(HMEMORY_HASH_KHASH) && (HMEMORY_HASH_KHASH == 1)
 		)
 #endif
-		debug_dump_callstack("       ");
+		hinfof("memory information:")
+		hinfof("    current: %llu bytes (%.02f mb)", memory_current, ((double) memory_current) / (1024.00 * 1024.00));
+		hinfof("    peak   : %llu bytes (%.02f mb)", memory_peak, ((double) memory_peak) / (1024.00 * 1024.00));
+		hinfof("    total  : %llu bytes (%.02f mb)", memory_total, ((double) memory_total) / (1024.00 * 1024.00));
 		hmemory_unlock();
 	}
 	return NULL;
