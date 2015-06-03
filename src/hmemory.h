@@ -71,6 +71,15 @@
 
 #endif
 
+#undef getline
+#define getline(strp, n, stream) ({ \
+	int __hmemory_r; \
+	char __hmemory_n[HMEMORY_DEBUG_NAME_MAX]; \
+	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "getline(%s %s:%d)", __FUNCTION__, __FILE__, __LINE__); \
+	__hmemory_r = hmemory_getline(__hmemory_n, strp, n stream); \
+	__hmemory_r; \
+})
+
 #undef asprintf
 #define asprintf(strp, fmt...) ({ \
 	int __hmemory_r; \
@@ -151,6 +160,8 @@
 
 #define hmemory_memcpy(a, b, c)               HMEMORY_FUNCTION_NAME(memcpy_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
 
+#define hmemory_getline(a, b, c)             HMEMORY_FUNCTION_NAME(getline_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
+
 #define hmemory_asprintf(a, b...)             HMEMORY_FUNCTION_NAME(asprintf_actual)(__FUNCTION__, __FILE__, __LINE__, a, b)
 #define hmemory_vasprintf(a, b, c)            HMEMORY_FUNCTION_NAME(vasprintf_actual)(__FUNCTION__, __FILE__, __LINE__, a, b, c)
 
@@ -167,6 +178,8 @@ extern "C" {
 #endif
 
 void * HMEMORY_FUNCTION_NAME(memcpy_actual) (const char *func, const char *file, const int line, void *destination, const void *source, size_t len);
+
+int HMEMORY_FUNCTION_NAME(getline_actual) (const char *func, const char *file, const int line, const char *name, char **strp, size_t *n, FILE *stream);
 
 int HMEMORY_FUNCTION_NAME(asprintf_actual) (const char *func, const char *file, const int line, const char *name, char **strp, const char *fmt, ...);
 int HMEMORY_FUNCTION_NAME(vasprintf_actual) (const char *func, const char *file, const int line, const char *name, char **strp, const char *fmt, va_list ap);

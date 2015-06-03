@@ -157,6 +157,37 @@ void * HMEMORY_FUNCTION_NAME(memcpy_actual) (const char *func, const char *file,
 	return memcpy(s1, s2, len);
 }
 
+int HMEMORY_FUNCTION_NAME(getline_actual) (const char *func, const char *file, const int line, const char *name, char **strp, size_t *n, FILE *stream)
+{
+	int rc;
+	rc = getline(strp, n, stream);
+	if (rc < 0) {
+#if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
+		hdebug_lock();
+		hinfof("getline failed");
+		hinfof("    at: %s %s:%d", func, file, line);
+		debug_dump_callstack("       ");
+		hdebug_unlock();
+		hassert((rc >= 0) && "getline failed");
+#endif
+	} else {
+#if defined(HMEMORY_DEBUG) && (HMEMORY_DEBUG == 1)
+		void *tmp;
+		tmp = malloc_actual("getline", func, file, line, name, strlen(*strp) + 1);
+		memcpy(tmp, *strp, strlen(*strp) + 1);
+		free(*strp);
+		*strp = tmp;
+#else
+		(void) name;
+		(void) func;
+		(void) file;
+		(void) line;
+#endif
+	}
+	return rc;
+}
+
+
 int HMEMORY_FUNCTION_NAME(asprintf_actual) (const char *func, const char *file, const int line, const char *name, char **strp, const char *fmt, ...)
 {
 	int rc;
