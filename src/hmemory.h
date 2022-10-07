@@ -25,7 +25,7 @@
 #endif
 
 #if !defined(HMEMORY_REPORT_CALLSTACK)
-#define HMEMORY_REPORT_CALLSTACK		0
+#define HMEMORY_REPORT_CALLSTACK		1
 #endif
 #define HMEMORY_REPORT_CALLSTACK_NAME		"hmemory_report_callstack"
 
@@ -58,9 +58,11 @@
 #include <stdarg.h>
 #include <errno.h>
 
-#define HMEMORY_DEBUG_NAME_MAX			256
+#define RAPIDJSON_MALLOC(size)			malloc(size)
+#define RAPIDJSON_FREE(ptr)			free(ptr)
+#define RAPIDJSON_REALLOC(ptr, new_size)	realloc(ptr, new_size)
 
-#ifndef __cplusplus
+#define HMEMORY_DEBUG_NAME_MAX			256
 
 #undef memcpy
 #define memcpy(s1, s2, n) ({ \
@@ -69,7 +71,7 @@
 	__hmemory_r; \
 })
 
-#endif
+#ifndef __cplusplus
 
 #undef getline
 #define getline(strp, n, stream) ({ \
@@ -79,6 +81,8 @@
 	__hmemory_r = hmemory_getline(__hmemory_n, strp, n, stream); \
 	__hmemory_r; \
 })
+
+#endif
 
 #undef asprintf
 #define asprintf(strp, fmt...) ({ \
@@ -100,7 +104,7 @@
 
 #undef strdup
 #define strdup(string) ({ \
-	void *__hmemory_r; \
+	char *__hmemory_r; \
 	char __hmemory_n[HMEMORY_DEBUG_NAME_MAX]; \
 	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "strdup-%p(%s %s:%d)", string, __FUNCTION__, __FILE__, __LINE__); \
 	__hmemory_r = hmemory_strdup(__hmemory_n, string); \
@@ -109,7 +113,7 @@
 
 #undef strndup
 #define strndup(string, size) ({ \
-	void *__hmemory_r; \
+	char *__hmemory_r; \
 	char __hmemory_n[HMEMORY_DEBUG_NAME_MAX]; \
 	snprintf(__hmemory_n, HMEMORY_DEBUG_NAME_MAX, "strndup-%p-%lld(%s %s:%d)", string, (long long) size, __FUNCTION__, __FILE__, __LINE__); \
 	__hmemory_r = hmemory_strndup(__hmemory_n, string, size); \

@@ -2,7 +2,9 @@
 prefix ?= /usr/local
 
 subdir-y = \
-    src \
+    src
+
+subdir-${HMEMORY_BUILD_TEST} += \
     test
 
 test_depends-y = \
