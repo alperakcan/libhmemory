@@ -51,5 +51,5 @@ install: src test
 
 	install -d ${DESTDIR}/${prefix}/lib
 	install -m 0644 dist/lib/libhmemory.o ${DESTDIR}/${prefix}/lib/libhmemory.o
-	install -m 0644 dist/lib/libhmemory.a ${DESTDIR}/${prefix}/lib/libhemory.a
+	install -m 0644 dist/lib/libhmemory.a ${DESTDIR}/${prefix}/lib/libhmemory.a
 	install -m 0755 dist/lib/libhmemory.so ${DESTDIR}/${prefix}/lib/libhmemory.so
