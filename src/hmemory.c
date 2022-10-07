@@ -464,6 +464,12 @@ struct stackinfo {
 static inline int debug_dump_callstack (const char *prefix)
 {
 #if defined(HMEMORY_ENABLE_CALLSTACK) && (HMEMORY_ENABLE_CALLSTACK == 1)
+	#ifndef bfd_get_section_flags
+		#define bfd_get_section_flags(bfd, ptr) ((void) bfd, (ptr)->flags)
+		#define bfd_get_section_size(ptr) ((ptr)->size)
+		#define bfd_get_section_vma(bfd, ptr) ((void) bfd, (ptr)->vma)
+	#endif
+
 	int i;
 	int rc;
 	int size;

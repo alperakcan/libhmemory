@@ -16,7 +16,7 @@
 #endif
 
 #if !defined(HMEMORY_ENABLE_CALLSTACK)
-#define HMEMORY_ENABLE_CALLSTACK		0
+#define HMEMORY_ENABLE_CALLSTACK		1
 #endif
 
 #if defined(__DARWIN__) && (__DARWIN__ == 1)
