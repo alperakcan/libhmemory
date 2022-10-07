@@ -1,4 +1,6 @@
 
+prefix ?= /usr/local
+
 subdir-y = \
     src \
     test
@@ -42,3 +44,12 @@ tests: test
 	  echo "success tests total: $$sc, success: $$ss, fail: $$sf"; \
 	  echo "fail tests    total: $$fc, success: $$fs, fail: $$ff"; \
 	)
+
+install: src test
+	install -d ${DESTDIR}/${prefix}/include/hmemory
+	install -m 0644 dist/include/hmemory.h ${DESTDIR}/${prefix}/include/hmemory/hmemory.h
+
+	install -d ${DESTDIR}/${prefix}/lib
+	install -m 0644 dist/lib/libhmemory.o ${DESTDIR}/${prefix}/lib/libhmemory.o
+	install -m 0644 dist/lib/libhmemory.a ${DESTDIR}/${prefix}/lib/libhemory.a
+	install -m 0755 dist/lib/libhmemory.so ${DESTDIR}/${prefix}/lib/libhmemory.so

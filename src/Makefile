@@ -4,6 +4,9 @@ target.o-y = \
 	libhmemory-actual.o \
 	libhmemory-debug.o
 
+target.a-y = \
+	libhmemory.a
+
 target.so-y = \
 	libhmemory.so
 
@@ -12,6 +15,9 @@ libhmemory.o_files-y = \
 	libhmemory-debug.o
 
 libhmemory.so_files-y = \
+	libhmemory.o
+
+libhmemory.a_files-y = \
 	libhmemory.o
 
 libhmemory-actual.o_files-y = \
@@ -60,6 +66,8 @@ endif
 distdir = ../dist
 
 dist.lib-y = \
+	libhmemory.o \
+	libhmemory.a \
 	libhmemory.so
 
 dist.include-y = \
