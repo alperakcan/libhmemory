@@ -48,15 +48,11 @@
 
 #if !defined(HMEMORY_INTERNAL) || (HMEMORY_INTERNAL == 0)
 
-#if !defined(_GNU_SOURCE)
-#define _GNU_SOURCE
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <stddef.h>
 #include <stdarg.h>
-#include <errno.h>
+#include <string.h>
 
 #define RAPIDJSON_MALLOC(size)			malloc(size)
 #define RAPIDJSON_FREE(ptr)			free(ptr)
