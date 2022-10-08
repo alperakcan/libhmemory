@@ -1,4 +1,6 @@
 
+HMEMORY_BUILD_TEST	?= y
+
 prefix ?= /usr/local
 
 subdir-y = \

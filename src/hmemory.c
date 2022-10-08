@@ -99,8 +99,8 @@ static pthread_mutex_t debugf_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t hmemory_cond	= PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t hmemory_mutex	= PTHREAD_MUTEX_INITIALIZER;
 
-static unsigned int hmemory_signature	= 0xdeadbeef;
-static unsigned int hmemory_signature_size = sizeof(hmemory_signature);
+static intptr_t  hmemory_signature	= 0xdeadbeef;
+static intptr_t  hmemory_signature_size = sizeof(hmemory_signature);
 
 static inline int hmemory_getenv_int (const char *name);
 static inline int debug_dump_callstack (const char *prefix);
