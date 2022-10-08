@@ -48,6 +48,10 @@
 
 #if !defined(HMEMORY_INTERNAL) || (HMEMORY_INTERNAL == 0)
 
+#if !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
